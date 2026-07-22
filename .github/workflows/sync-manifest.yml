@@ -1,0 +1,39 @@
+name: Sync Plugin Manifest
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install root deps
+        run: pnpm install --ignore-workspace
+
+      - name: Sync manifest
+        run: pnpm tsx scripts/sync-manifest.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create PR if changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "chore: sync plugin manifest"
+          body: "Auto-update: new plugins detected in quartz-community org"
+          branch: chore/sync-manifest
+          commit-message: "chore: sync dev.yaml with quartz-community org"

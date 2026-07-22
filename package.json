@@ -1,0 +1,47 @@
+{
+  "name": "@quartz-community/dev-mode",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unified Quartz v5 development environment",
+  "type": "module",
+  "license": "MIT",
+  "author": "Quartz Community",
+  "homepage": "https://github.com/quartz-community/dev-mode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/quartz-community/dev-mode.git"
+  },
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10"
+  },
+  "scripts": {
+    "dev-setup": "tsx scripts/setup.ts",
+    "add-plugin": "tsx scripts/add-plugin.ts",
+    "remove-plugin": "tsx scripts/remove-plugin.ts",
+    "sync": "tsx scripts/sync.ts",
+    "status": "tsx scripts/status.ts",
+    "validate": "tsx scripts/validate.ts",
+    "generate-turbo-graph": "tsx scripts/generate-turbo-graph.ts",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "check": "turbo run typecheck lint format:check test"
+  },
+  "devDependencies": {
+    "preact": "^10.28.2",
+    "preact-render-to-string": "^6.6.5",
+    "unified": "^11.0.5",
+    "vfile": "^6.0.3",
+    "github-slugger": "^2.0.0",
+    "hast-util-to-jsx-runtime": "^2.3.6",
+    "esbuild": "^0.27.0",
+    "sass": "^1.97.0",
+    "tsx": "^4.21.0",
+    "turbo": "^2.5.0",
+    "typescript": "^5.9.3",
+    "yaml": "^2.8.0"
+  }
+}

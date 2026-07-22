@@ -1,0 +1,293 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "*.tsbuildinfo"],
+      "inputs": [
+        "src/**",
+        "tsconfig.json",
+        "tsconfig.build.json",
+        "tsup.config.ts",
+        "tsup.config.js",
+        "package.json"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["build"],
+      "outputs": [],
+      "inputs": ["src/**", "tests/**", "**/*.test.ts", "**/*.test.tsx"]
+    },
+    "lint": {
+      "outputs": []
+    },
+    "format:check": {
+      "outputs": []
+    },
+    "validate": {
+      "cache": false
+    },
+    "@quartz-community/alias-redirects#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/article-title#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/backlinks#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/bases-page#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/breadcrumbs#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/canvas-page#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/citations#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/cname#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/comments#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/content-index#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/content-meta#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/content-page#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/crawl-links#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/created-modified-date#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/darkmode#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/description#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/encrypted-pages#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/explicit-publish#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/explorer#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/favicon#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/folder-page#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/quartz-fonts#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/footer#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/github-flavored-markdown#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/graph#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/hard-line-breaks#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/latex#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/note-properties#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/obsidian-flavored-markdown#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/obsidian-plugin-excalidraw#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/plugin-template#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/obsidian-plugin-ttrpg-tools-maps#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/og-image#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/ox-hugo#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/page-title#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@jackyzha0/quartz#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/reader-mode#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/recent-notes#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/remove-draft#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/roam#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/runtime#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/search#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/spacer#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/stacked-pages#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/syntax-highlighting#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    },
+    "@quartz-community/table-of-contents#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/tag-list#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/tag-page#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/unlisted-pages#build": {
+      "dependsOn": [
+        "@quartz-community/types#build",
+        "@quartz-community/utils#build"
+      ]
+    },
+    "@quartz-community/utils#build": {
+      "dependsOn": ["@quartz-community/types#build"]
+    }
+  }
+}

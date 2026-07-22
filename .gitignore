@@ -1,1 +1,28 @@
+# Cloned repositories (managed by setup CLI)
+repos/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+
+# Turborepo
+.turbo/
+
+# pnpm lockfile (ephemeral — depends on which repos are cloned)
+pnpm-lock.yaml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Internal
 .sisyphus/

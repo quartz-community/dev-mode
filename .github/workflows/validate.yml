@@ -1,0 +1,39 @@
+name: Validate Workspace
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup workspace
+        run: pnpm run dev-setup --preset full
+
+      - name: Build affected
+        run: pnpm turbo run build --affected
+
+      - name: Type-check affected
+        run: pnpm turbo run typecheck --affected
+
+      - name: Test affected
+        run: pnpm turbo run test --affected
+
+      - name: Lint affected
+        run: pnpm turbo run lint --affected
+
+      - name: Validate workspace
+        run: pnpm validate

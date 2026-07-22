@@ -1,0 +1,43 @@
+packages:
+  - "repos/*"
+
+catalog:
+  preact: "^10.28.2"
+  preact-render-to-string: "^6.6.5"
+  unified: "^11.0.5"
+  vfile: "^6.0.3"
+  github-slugger: "^2.0.0"
+  hast-util-to-jsx-runtime: "^2.3.6"
+  typescript: "^5.9.3"
+  tsup: "^8.5.0"
+  vitest: "^2.1.9"
+
+dedupePeerDependents: true
+resolvePeersFromWorkspaceRoot: true
+
+onlyBuiltDependencies:
+  - esbuild
+  - "@parcel/watcher"
+  - sharp
+
+publicHoistPattern:
+  - "@types/hast"
+  - "@types/mdast"
+  - "@types/unist"
+  - "@types/node"
+  - "*eslint*"
+  - "esbuild"
+  - "sass"
+
+overrides:
+  "@quartz-community/types": "workspace:*"
+  "@quartz-community/utils": "workspace:*"
+  "@quartz-community/runtime": "workspace:*"
+  "@jackyzha0/quartz": "workspace:*"
+  "@types/flexsearch": "link:./empty-stub"
+  "@types/lz-string": "link:./empty-stub"
+
+peerDependencyRules:
+  ignoreMissing:
+    - "@jackyzha0/quartz"
+    - "@jackyzha0/quartz/*"

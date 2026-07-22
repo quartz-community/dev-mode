@@ -1,0 +1,115 @@
+version: 1
+
+org: quartz-community
+
+core:
+  repo: jackyzha0/quartz
+  branch: v5
+
+infrastructure:
+  - name: types
+    repo: quartz-community/types
+  - name: utils
+    repo: quartz-community/utils
+  - name: runtime
+    repo: quartz-community/runtime
+
+plugins:
+  - name: syntax-highlighting
+  - name: obsidian-flavored-markdown
+  - name: github-flavored-markdown
+  - name: latex
+  - name: citations
+  - name: description
+  - name: created-modified-date
+  - name: crawl-links
+  - name: hard-line-breaks
+  - name: remove-draft
+  - name: explicit-publish
+  - name: content-page
+  - name: folder-page
+  - name: tag-page
+  - name: canvas-page
+  - name: content-index
+  - name: alias-redirects
+  - name: og-image
+  - name: cname
+  - name: favicon
+  - name: fonts
+  - name: explorer
+  - name: search
+  - name: graph
+  - name: backlinks
+  - name: table-of-contents
+  - name: breadcrumbs
+  - name: page-title
+  - name: article-title
+  - name: content-meta
+  - name: darkmode
+  - name: reader-mode
+  - name: footer
+  - name: recent-notes
+  - name: stacked-pages
+  - name: spacer
+  - name: comments
+  - name: tag-list
+  - name: note-properties
+  - name: unlisted-pages
+  - name: encrypted-pages
+  - name: ox-hugo
+  - name: roam
+  - name: bases-page
+  - name: obsidian-plugin-excalidraw
+  - name: obsidian-plugin-leaflet
+  - name: obsidian-plugin-ttrpg-tools-maps
+
+presets:
+  minimal:
+    description: "Core + infrastructure + essential transformers"
+    plugins:
+      - syntax-highlighting
+      - obsidian-flavored-markdown
+      - github-flavored-markdown
+      - description
+      - crawl-links
+
+  content-pipeline:
+    description: "All transformers + filters"
+    plugins:
+      - syntax-highlighting
+      - obsidian-flavored-markdown
+      - github-flavored-markdown
+      - latex
+      - citations
+      - description
+      - created-modified-date
+      - crawl-links
+      - hard-line-breaks
+      - remove-draft
+      - explicit-publish
+
+  ui:
+    description: "All component plugins"
+    plugins:
+      - explorer
+      - search
+      - graph
+      - backlinks
+      - table-of-contents
+      - breadcrumbs
+      - page-title
+      - article-title
+      - content-meta
+      - darkmode
+      - reader-mode
+      - footer
+      - recent-notes
+      - stacked-pages
+      - spacer
+      - comments
+      - tag-list
+      - note-properties
+
+  full:
+    description: "Everything"
+    plugins: ["*"]
