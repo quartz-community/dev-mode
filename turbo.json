@@ -177,6 +177,8 @@
     },
     "@quartz-community/obsidian-flavored-markdown#build": {
       "dependsOn": [
+        "@quartz-community/rehype-obsidian#build",
+        "@quartz-community/remark-obsidian#build",
         "@quartz-community/types#build",
         "@quartz-community/utils#build"
       ]

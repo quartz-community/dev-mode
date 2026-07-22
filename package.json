@@ -23,6 +23,7 @@
     "sync": "tsx scripts/sync.ts",
     "status": "tsx scripts/status.ts",
     "validate": "tsx scripts/validate.ts",
+    "migrate-to-npm": "tsx scripts/migrate-to-npm.ts",
     "generate-turbo-graph": "tsx scripts/generate-turbo-graph.ts",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",

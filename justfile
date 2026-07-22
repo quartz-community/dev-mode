@@ -72,21 +72,54 @@ check:
 
 # --- Quartz Live Server ---
 
+# Generate quartz.config.yaml with local path plugin specifiers for dev-mode
+[private]
+generate-dev-config:
+    #!/usr/bin/env bash
+    node -e "
+    const fs = require('fs');
+    const yaml = require('yaml');
+    const config = yaml.parse(fs.readFileSync('repos/quartz/quartz.config.default.yaml', 'utf-8'));
+    config.plugins = config.plugins.map(entry => {
+      const source = entry.source;
+      if (typeof source === 'string') {
+        let name;
+        if (source.startsWith('github:quartz-community/')) {
+          name = source.replace('github:quartz-community/', '');
+        } else if (source.startsWith('@quartz-community/')) {
+          name = source.replace('@quartz-community/', '');
+        }
+        if (name) return { ...entry, source: '../' + name };
+      }
+      return entry;
+    });
+    fs.writeFileSync('repos/quartz/quartz.config.yaml', yaml.stringify(config, { lineWidth: 0 }));
+    "
+
+# Remove generated dev config to keep repos/quartz clean
+[private]
+clean-dev-config:
+    rm -f repos/quartz/quartz.config.yaml
+
 # Build Quartz docs site and serve with live-reload (uses repos/quartz/docs as content)
-serve:
-    cd repos/quartz && node quartz/bootstrap-cli.mjs build --serve -d docs
+serve: generate-dev-config
+    -cd repos/quartz && node quartz/bootstrap-cli.mjs build --serve -d docs
+    @just clean-dev-config
 
 # Build and serve with a custom content directory
-serve-content dir:
-    cd repos/quartz && node quartz/bootstrap-cli.mjs build --serve -d {{dir}}
+serve-content dir: generate-dev-config
+    -cd repos/quartz && node quartz/bootstrap-cli.mjs build --serve -d {{dir}}
+    @just clean-dev-config
 
 # Build and serve on a custom port
-serve-port port="8080":
-    cd repos/quartz && node quartz/bootstrap-cli.mjs build --serve -d docs --port {{port}}
+serve-port port="8080": generate-dev-config
+    -cd repos/quartz && node quartz/bootstrap-cli.mjs build --serve -d docs --port {{port}}
+    @just clean-dev-config
 
 # Build Quartz site without serving (output to repos/quartz/public)
-build-site:
+build-site: generate-dev-config
     cd repos/quartz && node quartz/bootstrap-cli.mjs build -d docs
+    @just clean-dev-config
 
 # --- Git (across repos) ---
 
@@ -168,6 +201,67 @@ generate-graph:
 # Update dev.yaml with any new repos from the quartz-community org (requires gh + GITHUB_TOKEN)
 sync-manifest:
     pnpm tsx scripts/sync-manifest.ts
+
+# Migrate plugin repos to npm publishing
+migrate-npm:
+    pnpm migrate-to-npm
+
+# Migrate plugin repos to npm publishing (dry run)
+migrate-npm-dry:
+    pnpm migrate-to-npm -- --dry-run
+
+# Tag all repos with their current version to trigger CI publish (infrastructure first, then plugins)
+publish-tags:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    infra="types utils runtime rehype-obsidian remark-obsidian"
+    echo "=== Phase 1: infrastructure ==="
+    for name in $infra; do
+        dir="repos/$name"
+        [ -d "$dir/.git" ] || continue
+        version=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$dir/package.json')).version)")
+        tag="v$version"
+        if git -C "$dir" tag -l "$tag" | grep -q "$tag"; then
+            echo "  $name: $tag already exists, skipping"
+            continue
+        fi
+        git -C "$dir" tag -a "$tag" -m "Release $tag"
+        git -C "$dir" push origin "$tag"
+        echo "  $name: tagged and pushed $tag"
+    done
+    echo ""
+    echo "Waiting 30s for npm registry propagation..."
+    sleep 30
+    echo ""
+    echo "=== Phase 2: plugins ==="
+    for dir in repos/*/; do
+        [ -d "$dir/.git" ] || continue
+        name=$(basename "$dir")
+        [ "$name" = "quartz" ] && continue
+        echo "$infra" | grep -wq "$name" && continue
+        version=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$dir/package.json')).version)")
+        tag="v$version"
+        if git -C "$dir" tag -l "$tag" | grep -q "$tag"; then
+            echo "  $name: $tag already exists, skipping"
+            continue
+        fi
+        git -C "$dir" tag -a "$tag" -m "Release $tag"
+        git -C "$dir" push origin "$tag"
+        echo "  $name: tagged and pushed $tag"
+    done
+    echo ""
+    echo "Done. CI will publish packages as workflows complete."
+
+# Tag a single repo with its current version to trigger CI publish
+publish-tag name:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dir="repos/{{name}}"
+    version=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$dir/package.json')).version)")
+    tag="v$version"
+    git -C "$dir" tag -a "$tag" -m "Release $tag"
+    git -C "$dir" push origin "$tag"
+    echo "{{name}}: tagged and pushed $tag — CI will publish"
 
 # Build a single plugin
 build-plugin name:

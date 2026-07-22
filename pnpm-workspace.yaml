@@ -33,6 +33,8 @@ overrides:
   "@quartz-community/types": "workspace:*"
   "@quartz-community/utils": "workspace:*"
   "@quartz-community/runtime": "workspace:*"
+  "@quartz-community/rehype-obsidian": "workspace:*"
+  "@quartz-community/remark-obsidian": "workspace:*"
   "@jackyzha0/quartz": "workspace:*"
   "@types/flexsearch": "link:./empty-stub"
   "@types/lz-string": "link:./empty-stub"

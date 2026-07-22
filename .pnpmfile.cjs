@@ -14,6 +14,8 @@ const WORKSPACE_PACKAGES = new Set([
   "@quartz-community/types",
   "@quartz-community/utils",
   "@quartz-community/runtime",
+  "@quartz-community/rehype-obsidian",
+  "@quartz-community/remark-obsidian",
   "@jackyzha0/quartz",
 ]);
 

@@ -13,6 +13,10 @@ infrastructure:
     repo: quartz-community/utils
   - name: runtime
     repo: quartz-community/runtime
+  - name: rehype-obsidian
+    repo: quartz-community/rehype-obsidian
+  - name: remark-obsidian
+    repo: quartz-community/remark-obsidian
 
 plugins:
   - name: syntax-highlighting
