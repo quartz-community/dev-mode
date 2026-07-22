@@ -20,6 +20,9 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Install root dependencies
+        run: pnpm install --ignore-workspace
+
       - name: Setup workspace
         run: pnpm run dev-setup --preset full
 
