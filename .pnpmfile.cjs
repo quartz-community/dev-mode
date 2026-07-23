@@ -10,15 +10,6 @@
  * in pnpm-workspace.yaml.
  */
 
-const WORKSPACE_PACKAGES = new Set([
-  "@quartz-community/types",
-  "@quartz-community/utils",
-  "@quartz-community/runtime",
-  "@quartz-community/rehype-obsidian",
-  "@quartz-community/remark-obsidian",
-  "@jackyzha0/quartz",
-]);
-
 function readPackage(pkg) {
   for (const depType of [
     "dependencies",
@@ -29,7 +20,10 @@ function readPackage(pkg) {
     if (!deps) continue;
 
     for (const [name, version] of Object.entries(deps)) {
-      if (WORKSPACE_PACKAGES.has(name) && typeof version === "string") {
+      const isWorkspace =
+        name === "@jackyzha0/quartz" ||
+        name.startsWith("@quartz-community/");
+      if (isWorkspace && typeof version === "string") {
         deps[name] = "workspace:*";
       }
     }

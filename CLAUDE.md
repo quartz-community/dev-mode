@@ -6,7 +6,7 @@ The workspace uses **pnpm** at the root. Plugin repositories inside `repos/` kee
 
 ## Workspace Override Mechanism
 
-`.pnpmfile.cjs` rewrites `github:quartz-community/*` dependencies to `workspace:*` so pnpm links local clones. Never modify plugin `package.json` files to force local linking.
+`.pnpmfile.cjs` rewrites all `@quartz-community/*` and `@jackyzha0/quartz` dependencies to `workspace:*` so pnpm links local clones. Never modify plugin `package.json` files to force local linking.
 
 `pnpm-workspace.yaml` also declares `overrides` for `@quartz-community/types`, `@quartz-community/utils`, `@quartz-community/runtime`, and `@jackyzha0/quartz` to ensure pnpm and Turborepo both resolve them as workspace packages. `@quartz-community/rehype-obsidian` and `@quartz-community/remark-obsidian` are also overridden (dependencies of `obsidian-flavored-markdown`). Two deprecated `@types` stubs (`@types/flexsearch`, `@types/lz-string`) are overridden to `link:./empty-stub` to prevent them leaking into sibling package type resolution.
 
