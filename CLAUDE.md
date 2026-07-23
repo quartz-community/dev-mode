@@ -47,3 +47,4 @@ The underlying pnpm scripts still work (`pnpm add-plugin`, `pnpm validate`, etc.
 - `.npmrc` sets `ignore-scripts=true` to block lifecycle scripts.
 - `pnpm-workspace.yaml` `onlyBuiltDependencies` allows native packages (`esbuild`, `@parcel/watcher`, `sharp`).
 - `publicHoistPattern` keeps `@types/hast`, `@types/mdast`, `@types/unist`, `@types/node`, `esbuild`, and `sass` available at the root.
+- `overrides` pins `prettier` to `^3.8.1` across the workspace to prevent version mismatches with plugin CI.
