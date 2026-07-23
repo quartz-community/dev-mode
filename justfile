@@ -263,6 +263,40 @@ publish-tag name:
     git -C "$dir" push origin "$tag"
     echo "{{name}}: tagged and pushed $tag — CI will publish"
 
+# Regenerate package-lock.json outside the pnpm workspace (for CI compatibility)
+regen-lockfile name:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    dir="repos/{{name}}"
+    [ -d "$dir" ] || { echo "Not found: $dir"; exit 1; }
+    tmp=$(mktemp -d)
+    cp -r "$dir" "$tmp/pkg"
+    (cd "$tmp/pkg" && rm -f package-lock.json && npm install --ignore-scripts --package-lock-only 2>&1 | tail -2)
+    cp "$tmp/pkg/package-lock.json" "$dir/package-lock.json"
+    rm -rf "$tmp"
+    echo "Regenerated $dir/package-lock.json (standalone)"
+
+# Regenerate package-lock.json for ALL plugin repos outside the workspace
+regen-lockfiles:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    count=0
+    for dir in repos/*/; do
+        [ -d "$dir/.git" ] || continue
+        name=$(basename "$dir")
+        [ "$name" = "quartz" ] && continue
+        [ -f "$dir/package.json" ] || continue
+        tmp=$(mktemp -d)
+        cp -r "$dir" "$tmp/pkg"
+        (cd "$tmp/pkg" && rm -f package-lock.json && npm install --ignore-scripts --package-lock-only 2>/dev/null 1>/dev/null)
+        if [ -f "$tmp/pkg/package-lock.json" ]; then
+            cp "$tmp/pkg/package-lock.json" "$dir/package-lock.json"
+            count=$((count + 1))
+        fi
+        rm -rf "$tmp"
+    done
+    echo "Regenerated $count lockfiles (standalone)"
+
 # Build a single plugin
 build-plugin name:
     pnpm turbo run build --filter=@quartz-community/{{name}}
