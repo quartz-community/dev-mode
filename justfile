@@ -315,3 +315,21 @@ clean-cache:
 # Show the turbo task graph as a DOT file
 graph:
     pnpm turbo run build --graph=/dev/stdout 2>/dev/null
+
+# --- E2E Tests ---
+
+# Build E2E test fixtures
+e2e-build fixture="base-url-site":
+    pnpm tsx e2e/helpers/build-fixture.ts {{fixture}}
+
+# Run E2E tests (requires fixtures to be built first)
+e2e-test:
+    pnpm exec playwright test --config e2e/playwright.config.ts
+
+# Full E2E: build fixtures + run tests
+e2e fixture="base-url-site": (e2e-build fixture)
+    @just e2e-test
+
+# Install Playwright browser binaries (not needed if using Nix)
+install-browsers:
+    pnpm exec playwright install chromium

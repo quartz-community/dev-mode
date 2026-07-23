@@ -48,3 +48,37 @@ The underlying pnpm scripts still work (`pnpm add-plugin`, `pnpm validate`, etc.
 - `pnpm-workspace.yaml` `onlyBuiltDependencies` allows native packages (`esbuild`, `@parcel/watcher`, `sharp`).
 - `publicHoistPattern` keeps `@types/hast`, `@types/mdast`, `@types/unist`, `@types/node`, `esbuild`, and `sass` available at the root.
 - `overrides` pins `prettier` to `^3.8.1` across the workspace to prevent version mismatches with plugin CI.
+
+## Git Workflow (MANDATORY)
+
+**Always use `just` commands for git operations.** Never use raw `git commit` / `git push`.
+
+```bash
+just commit <repo> "<message>"   # stage (excluding dist/), commit
+just push                        # runs `just check` FIRST (typecheck + lint + format:check + test), then pushes all dirty repos
+just dirty                       # show which repos have uncommitted changes
+```
+
+`just push` runs `just check` before pushing. `just check` includes **`format:check`** (prettier). If you skip this and push manually, unformatted code will land on the remote.
+
+Individual repos (e.g., `repos/quartz`) also have their own formatting:
+
+```bash
+cd repos/quartz && npm run format   # prettier --write
+cd repos/quartz && npm run check    # tsc --noEmit + prettier --check
+```
+
+**Before any commit**: run `just check` or at minimum `npm run format` in the affected repo. Do not commit unformatted code.
+
+## E2E Test Infrastructure
+
+Browser-based E2E tests live in `e2e/` (not a workspace package). Run via:
+
+```bash
+just e2e                         # build fixture + run Playwright tests
+just e2e-build <fixture>         # build a specific fixture site
+just e2e-test                    # run Playwright tests (fixtures must be pre-built)
+just install-browsers            # install Chromium (not needed in nix develop)
+```
+
+The Nix flake provides Chromium via `pkgs.chromium` and sets `CHROME_BIN`. In `nix develop`, browser installation is automatic. Outside Nix, run `just install-browsers` or set `CHROME_BIN` to a local Chromium path.

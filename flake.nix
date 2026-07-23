@@ -19,11 +19,13 @@
             just
             pkg-config
             vips
+            chromium
           ];
 
           shellHook = ''
             echo "Quartz v5 dev environment — Node $(node --version), pnpm $(pnpm --version)"
             export SHARP_IGNORE_GLOBAL_LIBVIPS=1
+            export CHROME_BIN="${pkgs.chromium}/bin/chromium"
           '';
         };
       });

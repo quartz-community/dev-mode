@@ -30,21 +30,26 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "lint": "turbo run lint",
-    "check": "turbo run typecheck lint format:check test"
+    "check": "turbo run typecheck lint format:check test",
+    "e2e:build": "tsx e2e/helpers/build-fixture.ts base-url-site",
+    "e2e:test": "playwright test --config e2e/playwright.config.ts",
+    "e2e": "pnpm e2e:build && pnpm e2e:test"
   },
   "devDependencies": {
-    "preact": "^10.28.2",
-    "preact-render-to-string": "^6.6.5",
-    "unified": "^11.0.5",
-    "vfile": "^6.0.3",
+    "@playwright/test": "1.61.1",
+    "esbuild": "^0.27.0",
     "github-slugger": "^2.0.0",
     "hast-util-to-jsx-runtime": "^2.3.6",
-    "esbuild": "^0.27.0",
+    "preact": "^10.28.2",
+    "preact-render-to-string": "^6.6.5",
     "prettier": "^3.8.1",
     "sass": "^1.97.0",
+    "serve": "^14.2.6",
     "tsx": "^4.21.0",
     "turbo": "^2.5.0",
     "typescript": "^5.9.3",
+    "unified": "^11.0.5",
+    "vfile": "^6.0.3",
     "yaml": "^2.8.0"
   }
 }
