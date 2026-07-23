@@ -203,7 +203,10 @@ async function main() {
     logInfo("dry-run", { action: "pnpm-install", cwd: ROOT });
     logInfo("dry-run", { action: "pnpm-turbo-build", cwd: ROOT });
   } else {
-    execSync("pnpm install --no-frozen-lockfile", { stdio: "inherit", cwd: ROOT });
+    execSync("pnpm install --no-frozen-lockfile", {
+      stdio: "inherit",
+      cwd: ROOT,
+    });
     execSync("pnpm turbo run build", { stdio: "inherit", cwd: ROOT });
   }
 

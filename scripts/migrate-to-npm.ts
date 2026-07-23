@@ -327,12 +327,17 @@ async function commitAndPush(
     return;
   }
   try {
-    execSync("npx prettier --write package.json .gitignore .github/workflows/ci.yml", {
-      cwd: repoPath,
-      stdio: "pipe",
-      timeout: 30_000,
-    });
-  } catch (_) { /* prettier unavailable or file missing */ }
+    execSync(
+      "npx prettier --write package.json .gitignore .github/workflows/ci.yml",
+      {
+        cwd: repoPath,
+        stdio: "pipe",
+        timeout: 30_000,
+      },
+    );
+  } catch (_) {
+    /* prettier unavailable or file missing */
+  }
   await runCommand("git", ["add", "-A"], repoPath, dryRun);
   await runCommand(
     "git",
