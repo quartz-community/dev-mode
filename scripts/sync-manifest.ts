@@ -60,12 +60,27 @@ function main(): void {
   const infraNames = new Set(
     manifest.infrastructure?.map((entry) => entry.name) ?? [],
   );
-  infraNames.add("dev-mode");
+  const excluded = new Set([
+    "dev-mode",
+    "awesome-quartz",
+    "demo-vault",
+    "registry",
+    "v5",
+    "quartz-build",
+    "amethyst",
+    "quartz-plugin-template",
+    "external-quartz-leaflet-map-plugin",
+    "micromark-extension-gfm-task-list-item-quartz",
+    "micromark-extensions-ofm",
+    "rehype-ofm",
+    "remark-ofm",
+  ]);
 
   const additions = repos
     .map((repo) => repo.name)
     .filter((name) => !existingPlugins.has(name))
     .filter((name) => !infraNames.has(name))
+    .filter((name) => !excluded.has(name))
     .sort((a, b) => a.localeCompare(b));
 
   if (additions.length === 0) {

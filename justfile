@@ -210,6 +210,13 @@ migrate-npm:
 migrate-npm-dry:
     pnpm migrate-to-npm -- --dry-run
 
+# Deploy Changesets to all plugin repos
+deploy-changesets:
+    pnpm tsx scripts/deploy-changesets.ts
+
+deploy-changesets-dry:
+    pnpm tsx scripts/deploy-changesets.ts --dry-run
+
 # Tag all repos with their current version to trigger CI publish (infrastructure first, then plugins)
 publish-tags:
     #!/usr/bin/env bash
