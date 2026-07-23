@@ -172,7 +172,9 @@ async function runCommandCapture(
         return;
       }
       rejectPromise(
-        new Error(stderr.trim() || `Command failed (${command} ${args.join(" ")})`),
+        new Error(
+          stderr.trim() || `Command failed (${command} ${args.join(" ")})`,
+        ),
       );
     });
   });
@@ -208,7 +210,9 @@ function updatePackageJson(
   if (!pkg.devDependencies || typeof pkg.devDependencies !== "object") {
     pkg.devDependencies = { "@changesets/cli": CHANGESETS_CLI_VERSION };
     changed = true;
-  } else if (!(pkg.devDependencies as Record<string, string>)["@changesets/cli"]) {
+  } else if (
+    !(pkg.devDependencies as Record<string, string>)["@changesets/cli"]
+  ) {
     (pkg.devDependencies as Record<string, string>)["@changesets/cli"] =
       CHANGESETS_CLI_VERSION;
     changed = true;
@@ -237,7 +241,10 @@ function updateChangesetsConfig(
     : "";
   if (existing === template) return { changed: false };
   if (dryRun) {
-    logInfo("dry-run", { action: "update-changesets-config", path: configPath });
+    logInfo("dry-run", {
+      action: "update-changesets-config",
+      path: configPath,
+    });
     return { changed: true };
   }
   if (!existsSync(changesetDir)) {
@@ -337,7 +344,9 @@ async function main() {
   }
 
   const manifest = readManifest();
-  const infra = manifest.infrastructure.map((entry) => entry.name ?? entry.repo);
+  const infra = manifest.infrastructure.map(
+    (entry) => entry.name ?? entry.repo,
+  );
   const plugins = manifest.plugins.map((entry) => entry.name);
   const repoNames = [...infra, ...plugins];
   const selected = filter

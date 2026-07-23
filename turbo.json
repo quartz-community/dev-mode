@@ -189,7 +189,7 @@
         "@quartz-community/utils#build"
       ]
     },
-    "@quartz-community/plugin-template#build": {
+    "@quartz-community/obsidian-plugin-leaflet#build": {
       "dependsOn": [
         "@quartz-community/types#build",
         "@quartz-community/utils#build"
@@ -218,6 +218,50 @@
     },
     "@jackyzha0/quartz#build": {
       "dependsOn": [
+        "@quartz-community/alias-redirects#build",
+        "@quartz-community/article-title#build",
+        "@quartz-community/backlinks#build",
+        "@quartz-community/bases-page#build",
+        "@quartz-community/breadcrumbs#build",
+        "@quartz-community/canvas-page#build",
+        "@quartz-community/citations#build",
+        "@quartz-community/cname#build",
+        "@quartz-community/comments#build",
+        "@quartz-community/content-index#build",
+        "@quartz-community/content-meta#build",
+        "@quartz-community/content-page#build",
+        "@quartz-community/crawl-links#build",
+        "@quartz-community/created-modified-date#build",
+        "@quartz-community/darkmode#build",
+        "@quartz-community/description#build",
+        "@quartz-community/encrypted-pages#build",
+        "@quartz-community/explicit-publish#build",
+        "@quartz-community/explorer#build",
+        "@quartz-community/favicon#build",
+        "@quartz-community/folder-page#build",
+        "@quartz-community/footer#build",
+        "@quartz-community/github-flavored-markdown#build",
+        "@quartz-community/graph#build",
+        "@quartz-community/hard-line-breaks#build",
+        "@quartz-community/latex#build",
+        "@quartz-community/note-properties#build",
+        "@quartz-community/obsidian-flavored-markdown#build",
+        "@quartz-community/og-image#build",
+        "@quartz-community/ox-hugo#build",
+        "@quartz-community/page-title#build",
+        "@quartz-community/quartz-fonts#build",
+        "@quartz-community/reader-mode#build",
+        "@quartz-community/recent-notes#build",
+        "@quartz-community/remove-draft#build",
+        "@quartz-community/roam#build",
+        "@quartz-community/search#build",
+        "@quartz-community/spacer#build",
+        "@quartz-community/stacked-pages#build",
+        "@quartz-community/syntax-highlighting#build",
+        "@quartz-community/table-of-contents#build",
+        "@quartz-community/tag-list#build",
+        "@quartz-community/tag-page#build",
+        "@quartz-community/unlisted-pages#build",
         "@quartz-community/types#build",
         "@quartz-community/utils#build"
       ]

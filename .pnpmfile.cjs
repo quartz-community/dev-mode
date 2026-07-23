@@ -21,8 +21,7 @@ function readPackage(pkg) {
 
     for (const [name, version] of Object.entries(deps)) {
       const isWorkspace =
-        name === "@jackyzha0/quartz" ||
-        name.startsWith("@quartz-community/");
+        name === "@jackyzha0/quartz" || name.startsWith("@quartz-community/");
       if (isWorkspace && typeof version === "string") {
         deps[name] = "workspace:*";
       }
