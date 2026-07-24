@@ -231,6 +231,7 @@
         "@quartz-community/content-meta#build",
         "@quartz-community/content-page#build",
         "@quartz-community/crawl-links#build",
+        "@quartz-themes/core#build",
         "@quartz-community/created-modified-date#build",
         "@quartz-community/darkmode#build",
         "@quartz-community/description#build",
@@ -265,6 +266,9 @@
         "@quartz-community/types#build",
         "@quartz-community/utils#build"
       ]
+    },
+    "@quartz-themes/core#build": {
+      "dependsOn": ["@quartz-community/types#build"]
     },
     "@quartz-community/reader-mode#build": {
       "dependsOn": [

@@ -18,6 +18,13 @@ infrastructure:
   - name: remark-obsidian
     repo: quartz-community/remark-obsidian
 
+themes:
+  org: quartz-themes
+  packages:
+    - name: quartz-themes-core
+      repo: quartz-themes/core
+      branch: main
+
 plugins:
   - name: syntax-highlighting
   - name: obsidian-flavored-markdown

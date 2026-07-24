@@ -37,6 +37,7 @@ overrides:
   "@quartz-community/rehype-obsidian": "workspace:*"
   "@quartz-community/remark-obsidian": "workspace:*"
   "@jackyzha0/quartz": "workspace:*"
+  "@quartz-themes/core": "workspace:*"
   "@types/flexsearch": "link:./empty-stub"
   "@types/lz-string": "link:./empty-stub"
   "prettier": "^3.8.1"

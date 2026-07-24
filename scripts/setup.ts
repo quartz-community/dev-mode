@@ -23,11 +23,17 @@ interface ManifestPreset {
   plugins: string[];
 }
 
+interface ManifestThemes {
+  org: string;
+  packages: ManifestRepo[];
+}
+
 interface Manifest {
   version: number;
   org: string;
   core: ManifestRepo;
   infrastructure: ManifestRepo[];
+  themes?: ManifestThemes;
   plugins: ManifestPlugin[];
   presets?: Record<string, ManifestPreset>;
 }
@@ -157,6 +163,14 @@ async function main() {
   manifest.infrastructure.forEach((infra) => {
     repos.push(normalizeRepo(infra.name ?? infra.repo, infra.repo));
   });
+
+  if (manifest.themes?.packages) {
+    manifest.themes.packages.forEach((theme) => {
+      repos.push(
+        normalizeRepo(theme.name ?? theme.repo, theme.repo, theme.branch),
+      );
+    });
+  }
 
   for (const plugin of selectedPlugins) {
     const manifestEntry = manifest.plugins.find((p) => p.name === plugin);
