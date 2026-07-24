@@ -1,0 +1,13 @@
+filters: file.ext == "md"
+formulas:
+  Month Short: file.ctime.format("MMM")
+  Month Full: file.ctime.format("MMMM")
+  Formatted: file.ctime.format("YYYY-MM-DD")
+views:
+  - name: Date Formats
+    type: table
+    order:
+      - file.name
+      - formula.Month Short
+      - formula.Month Full
+      - formula.Formatted

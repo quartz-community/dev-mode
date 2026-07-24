@@ -1,0 +1,11 @@
+filters: file.ext == "md"
+views:
+  - name: All People
+    type: table
+    order:
+      - file.name
+  - name: French Philosophers
+    type: table
+    order:
+      - file.name
+    filters: file.tags.contains("philosopher")

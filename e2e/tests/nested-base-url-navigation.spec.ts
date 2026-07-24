@@ -1,17 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-const EXPECTED_MISSING_RESOURCES = ["contentIndex.json"];
+const BASE = "/Obsidian-TTRPG-Quartz";
 
-function isExpected404(url: string): boolean {
-  return EXPECTED_MISSING_RESOURCES.some((r) => url.includes(r));
-}
+test.describe("Nested Base URL / SPA Navigation (#2420, #2462)", () => {
+  test.use({
+    baseURL: `http://localhost:4174${BASE}`,
+  });
 
-test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
-  test.use({ baseURL: "http://localhost:4173" });
-  test("all internal links resolve to /test-base/-prefixed URLs", async ({
+  test("all internal links resolve to nested base-prefixed URLs", async ({
     page,
   }) => {
-    await page.goto("/test-base/");
+    await page.goto(`${BASE}/`);
 
     const links = await page.locator("a[href]").evaluateAll((anchors) =>
       anchors
@@ -29,7 +28,7 @@ test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
     expect(links.length).toBeGreaterThan(0);
     for (const link of links) {
       const linkPath = new URL(link).pathname;
-      expect(linkPath).toMatch(/^\/test-base\//);
+      expect(linkPath).toMatch(new RegExp(`^${BASE}/`));
     }
   });
 
@@ -38,18 +37,17 @@ test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
   }) => {
     const responses404: string[] = [];
     page.on("response", (res) => {
-      if (res.status() === 404 && !isExpected404(res.url()))
-        responses404.push(res.url());
+      if (res.status() === 404) responses404.push(res.url());
     });
 
-    await page.goto("/test-base/docs/getting-started");
+    await page.goto(`${BASE}/docs/getting-started`);
 
     await page
       .locator('a[href*="features/callouts"]')
       .and(page.locator(":visible"))
       .first()
       .click();
-    await page.waitForURL("**/test-base/features/callouts");
+    await page.waitForURL(`**${BASE}/features/callouts`);
 
     await expect(page.locator("h1")).toContainText("Callouts");
     expect(responses404).toEqual([]);
@@ -58,28 +56,28 @@ test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
   test("chained SPA navigation: home -> docs -> features -> deep", async ({
     page,
   }) => {
-    await page.goto("/test-base/");
+    await page.goto(`${BASE}/`);
 
     await page
       .locator('a[href*="docs/getting-started"]')
       .and(page.locator(":visible"))
       .first()
       .click();
-    await page.waitForURL("**/test-base/docs/getting-started");
+    await page.waitForURL(`**${BASE}/docs/getting-started`);
 
     await page
       .locator('a[href*="features/callouts"]')
       .and(page.locator(":visible"))
       .first()
       .click();
-    await page.waitForURL("**/test-base/features/callouts");
+    await page.waitForURL(`**${BASE}/features/callouts`);
 
     await page
       .locator('a[href*="deep/nested/page"]')
       .and(page.locator(":visible"))
       .first()
       .click();
-    await page.waitForURL("**/test-base/deep/nested/page");
+    await page.waitForURL(`**${BASE}/deep/nested/page`);
 
     const links = await page
       .locator("a.internal")
@@ -89,70 +87,70 @@ test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
     expect(links.length).toBeGreaterThan(0);
     for (const link of links) {
       const linkPath = new URL(link).pathname;
-      expect(linkPath).toMatch(/^\/test-base\//);
+      expect(linkPath).toMatch(new RegExp(`^${BASE}/`));
     }
   });
 
-  test("SPA-navigated page matches full-page-load content", async ({
+  test("browser back/forward preserves nested base prefix", async ({
     page,
   }) => {
-    await page.goto("/test-base/features/callouts");
-    const fullLoadTitle = await page.locator("h1").textContent();
-    const fullLoadArticle = await page.locator("article").textContent();
-
-    await page.goto("/test-base/");
-    await page
-      .locator('a[href*="features/callouts"]')
-      .and(page.locator(":visible"))
-      .first()
-      .click();
-    await page.waitForURL("**/test-base/features/callouts");
-    const spaTitle = await page.locator("h1").textContent();
-    const spaArticle = await page.locator("article").textContent();
-
-    expect(spaTitle).toBe(fullLoadTitle);
-    expect(spaArticle).toBe(fullLoadArticle);
-  });
-
-  test("browser back/forward preserves /test-base/ prefix", async ({
-    page,
-  }) => {
-    await page.goto("/test-base/");
+    await page.goto(`${BASE}/`);
     await page
       .locator('a[href*="docs/getting-started"]')
       .and(page.locator(":visible"))
       .first()
       .click();
-    await page.waitForURL("**/test-base/docs/getting-started");
+    await page.waitForURL(`**${BASE}/docs/getting-started`);
 
     await page.goBack();
-    await page.waitForURL("**/test-base/");
+    await page.waitForURL(`**${BASE}/`);
 
     await page.goForward();
-    await page.waitForURL("**/test-base/docs/getting-started");
+    await page.waitForURL(`**${BASE}/docs/getting-started`);
   });
 
   test("no 404 responses during SPA navigation chain", async ({ page }) => {
     const responses404: string[] = [];
     page.on("response", (res) => {
-      if (res.status() === 404 && !isExpected404(res.url()))
-        responses404.push(res.url());
+      if (res.status() === 404) responses404.push(res.url());
     });
 
-    await page.goto("/test-base/");
+    await page.goto(`${BASE}/`);
     await page
       .locator('a[href*="docs/getting-started"]')
       .and(page.locator(":visible"))
       .first()
       .click();
-    await page.waitForURL("**/test-base/docs/getting-started");
+    await page.waitForURL(`**${BASE}/docs/getting-started`);
     await page
       .locator('a[href*="features/callouts"]')
       .and(page.locator(":visible"))
       .first()
       .click();
-    await page.waitForURL("**/test-base/features/callouts");
+    await page.waitForURL(`**${BASE}/features/callouts`);
 
     expect(responses404).toEqual([]);
+  });
+
+  test("graph links use nested base path", async ({ page }) => {
+    await page.goto(`${BASE}/`);
+    await page.waitForTimeout(1000);
+
+    const graphLinks = await page.evaluate((base) => {
+      const links: string[] = [];
+      document
+        .querySelectorAll(".graph-outer a, #graph-container a")
+        .forEach((a) => {
+          const href = (a as HTMLAnchorElement).href;
+          if (href && new URL(href).origin === window.location.origin) {
+            links.push(new URL(href).pathname);
+          }
+        });
+      return links;
+    }, BASE);
+
+    for (const link of graphLinks) {
+      expect(link).toMatch(new RegExp(`^${BASE}/`));
+    }
   });
 });

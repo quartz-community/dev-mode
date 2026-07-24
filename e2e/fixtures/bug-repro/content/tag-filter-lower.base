@@ -1,0 +1,9 @@
+filters:
+  and:
+    - file.tags.contains("lowercase-tag")
+views:
+  - name: Lowercase Tags
+    type: table
+    properties:
+      - file.name
+      - file.tags

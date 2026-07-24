@@ -1,0 +1,9 @@
+filters:
+  and:
+    - file.tags.contains("My-Tag")
+views:
+  - name: Mixed Case Tags
+    type: table
+    properties:
+      - file.name
+      - file.tags

@@ -123,7 +123,7 @@ build-site: generate-dev-config
 
 # --- Git (across repos) ---
 
-# Check all repos, run full checks, then push repos with changes (ignores dist/ noise)
+# Check all repos, run full checks, then push repos with uncommitted or unpushed changes (ignores dist/ noise)
 push: check
     #!/usr/bin/env bash
     set -euo pipefail
@@ -133,8 +133,14 @@ push: check
     for dir in repos/*/; do
         [ -d "$dir/.git" ] || continue
         name=$(basename "$dir")
-        changes=$(git -C "$dir" status --porcelain -- ':!dist/')
-        if [ -z "$changes" ]; then
+        uncommitted=$(git -C "$dir" status --porcelain -- ':!dist/')
+        tracking=$(git -C "$dir" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")
+        if [ -n "$tracking" ]; then
+            unpushed=$(git -C "$dir" log "$tracking..HEAD" --oneline 2>/dev/null || echo "")
+        else
+            unpushed=""
+        fi
+        if [ -z "$uncommitted" ] && [ -z "$unpushed" ]; then
             skipped=$((skipped + 1))
             continue
         fi
@@ -189,7 +195,7 @@ restore-dist:
 
 # Commit all changes in a specific repo with a message (excludes dist/)
 commit repo msg:
-    git -C repos/{{repo}} add -A -- ':!dist/'
+    git -C repos/{{repo}} add --all --ignore-errors -- . ':!dist/'
     git -C repos/{{repo}} commit -m "{{msg}}"
 
 # --- Utilities ---
@@ -307,6 +313,21 @@ regen-lockfiles:
 # Build a single plugin
 build-plugin name:
     pnpm turbo run build --filter=@quartz-community/{{name}}
+
+# Regenerate quartz lockfile and commit (run after plugin releases land on npm)
+update-quartz-lockfile:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    just regen-lockfile quartz
+    if git -C repos/quartz diff --quiet package-lock.json 2>/dev/null; then
+        echo "Lockfile unchanged — nothing to update"
+        exit 0
+    fi
+    echo "Updated versions:"
+    git -C repos/quartz diff package-lock.json | grep '"version"' | head -10
+    git -C repos/quartz add package-lock.json
+    git -C repos/quartz commit -m "chore: update lockfile for latest plugin releases"
+    echo "Committed. Run 'just push' to push."
 
 # Clean turbo cache
 clean-cache:

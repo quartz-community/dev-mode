@@ -2,9 +2,10 @@ import * as http from "node:http";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
-const BASE_PATH = "/test-base";
+const BASE_PATH = process.env.BASE_PATH || "/test-base";
 const PORT = parseInt(process.env.PORT || "4173", 10);
-const SITE_DIR = path.resolve(import.meta.dirname, "../.output/base-url-site");
+const FIXTURE = process.env.FIXTURE || "base-url-site";
+const SITE_DIR = path.resolve(import.meta.dirname, "../.output", FIXTURE);
 
 const MIME_TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -44,7 +45,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const stripped = url.slice(BASE_PATH.length) || "/";
+  const stripped = decodeURI(url.slice(BASE_PATH.length) || "/");
   const filePath = resolveFile(stripped);
 
   if (!filePath) {
