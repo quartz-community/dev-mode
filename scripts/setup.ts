@@ -80,6 +80,23 @@ function normalizeRepo(name: string, repo: string, branch?: string) {
   return { name, repo, branch };
 }
 
+function getDefaultBranch(ghRepo: string): string | undefined {
+  try {
+    const output = execSync(
+      `git ls-remote --symref https://github.com/${ghRepo}.git HEAD`,
+      {
+        encoding: "utf-8",
+        timeout: 15_000,
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    );
+    const match = output.match(/^ref: refs\/heads\/(\S+)\tHEAD$/m);
+    return match?.[1];
+  } catch {
+    return undefined;
+  }
+}
+
 async function runCommand(
   command: string,
   args: string[],
@@ -196,16 +213,17 @@ async function main() {
       return;
     }
 
+    const branch = repo.branch ?? getDefaultBranch(repo.repo);
     const args = [
       "clone",
       "--depth=1",
       "--single-branch",
-      ...(repo.branch ? ["--branch", repo.branch] : []),
+      ...(branch ? ["--branch", branch] : []),
       `https://github.com/${repo.repo}.git`,
       targetDir,
     ];
 
-    logInfo("clone-start", { repo: repo.repo, path: targetDir });
+    logInfo("clone-start", { repo: repo.repo, branch, path: targetDir });
     await runCommand("git", args, ROOT, dryRun);
     logInfo("clone-done", { repo: repo.repo, path: targetDir });
     clones.push({ name: repo.name ?? repo.repo, status: "cloned" });

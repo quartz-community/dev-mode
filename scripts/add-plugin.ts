@@ -7,6 +7,23 @@ const ROOT = resolve(import.meta.dirname, "..");
 const REPOS_DIR = join(ROOT, "repos");
 const MANIFEST_PATH = join(ROOT, "dev.yaml");
 
+function getDefaultBranch(ghRepo: string): string | undefined {
+  try {
+    const output = execSync(
+      `git ls-remote --symref https://github.com/${ghRepo}.git HEAD`,
+      {
+        encoding: "utf-8",
+        timeout: 15_000,
+        stdio: ["ignore", "pipe", "ignore"],
+      },
+    );
+    const match = output.match(/^ref: refs\/heads\/(\S+)\tHEAD$/m);
+    return match?.[1];
+  } catch {
+    return undefined;
+  }
+}
+
 interface ManifestPlugin {
   name: string;
   repo?: string;
@@ -105,13 +122,15 @@ async function main() {
     throw new Error(`Repo already exists: ${targetDir}`);
   }
 
-  logInfo("clone-start", { repo, path: targetDir });
+  const branch = getDefaultBranch(repo);
+  logInfo("clone-start", { repo, branch, path: targetDir });
   await runCommand(
     "git",
     [
       "clone",
       "--depth=1",
       "--single-branch",
+      ...(branch ? ["--branch", branch] : []),
       `https://github.com/${repo}.git`,
       targetDir,
     ],
