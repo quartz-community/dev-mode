@@ -59,6 +59,62 @@ just check                  # full suite: typecheck + lint + format + test
 
 Run `just` with no arguments to see all available commands.
 
+## Git Workflow
+
+**Always use `just` commands for git operations.** Raw `git commit` / `git push` will skip formatting checks.
+
+```bash
+just commit <repo> "<message>"   # stage (excluding dist/), commit
+just push                        # runs full checks first, then pushes all dirty repos
+just dirty                       # show which repos have uncommitted changes
+```
+
+`just push` runs `just check` (typecheck + lint + format + test) before pushing. This prevents unformatted code from reaching the remote.
+
+Individual repos also have their own formatting:
+
+```bash
+cd repos/quartz && npm run format   # prettier --write
+cd repos/quartz && npm run check    # tsc --noEmit + prettier --check
+```
+
+## Plugin Development
+
+### Working on an existing plugin
+
+1. Clone the workspace: `just setup` (or `just add-plugin <name>` for a single plugin)
+2. Edit plugin source in `repos/<name>/src/`
+3. Build: `just build-plugin <name>`
+4. Test: `just test-plugin <name>`
+5. Type-check: `just typecheck`
+
+### Testing with a live Quartz site
+
+```bash
+just dev    # starts watcher + Quartz dev server with live-reload
+```
+
+Edit plugin code, changes rebuild automatically, browser refreshes.
+
+### Creating a new plugin
+
+Use the plugin template:
+
+```bash
+gh repo create quartz-community/<name> --template quartz-community/quartz-plugin-template
+just add-plugin <name>
+```
+
+### Publishing
+
+Plugins use changesets for versioning:
+
+1. Add a changeset: create a `.changeset/<name>.md` file
+2. Commit and push to `main`
+3. CI creates a "Version Package" PR
+4. Merge the PR — CI publishes to npm
+5. Update Quartz lockfile: `just update-quartz-lockfile && just push`
+
 ## How It Works
 
 - **pnpm workspace**: `repos/*` is a single workspace. Shared dependencies are managed at the root.

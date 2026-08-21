@@ -20,6 +20,14 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store/v3
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
+
       - name: Install root dependencies
         run: pnpm install --ignore-workspace
 
@@ -40,3 +48,18 @@ jobs:
 
       - name: Validate workspace
         run: pnpm validate
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Build E2E fixtures
+        run: |
+          pnpm tsx e2e/helpers/build-fixture.ts base-url-site
+          pnpm tsx e2e/helpers/build-fixture.ts nested-base-url
+          pnpm tsx e2e/helpers/build-fixture.ts bug-repro
+          pnpm tsx e2e/helpers/build-fixture.ts footer-disabled
+
+      - name: Run E2E tests
+        run: pnpm exec playwright test --config e2e/playwright.config.ts
+        env:
+          CI: "true"

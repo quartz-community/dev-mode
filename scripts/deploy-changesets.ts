@@ -1,11 +1,15 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { execSync, spawn } from "node:child_process";
-import { parse } from "yaml";
+import { execSync } from "node:child_process";
+import { parseArgs } from "./lib/args.js";
+import { runCommand, runCommandCapture } from "./lib/exec.js";
+import { safeReadJson } from "./lib/json.js";
+import { logError, logInfo, logWarn } from "./lib/log.js";
+import { readManifest } from "./lib/manifest.js";
+import type { Manifest, RepoUpdateResult } from "./lib/types.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPOS_DIR = join(ROOT, "repos");
-const MANIFEST_PATH = join(ROOT, "dev.yaml");
 const CI_TEMPLATE_PATH = join(ROOT, "scripts", "ci-template.yml");
 const CHANGESETS_CONFIG_TEMPLATE_PATH = join(
   ROOT,
@@ -49,137 +53,6 @@ jobs:
           NODE_AUTH_TOKEN: \${{ secrets.NPM_TOKEN }}
 `;
 
-interface ManifestRepo {
-  name?: string;
-  repo: string;
-}
-
-interface ManifestPlugin {
-  name: string;
-  repo?: string;
-}
-
-interface Manifest {
-  version: number;
-  org: string;
-  core: ManifestRepo;
-  infrastructure: ManifestRepo[];
-  plugins: ManifestPlugin[];
-}
-
-interface RepoUpdateResult {
-  name: string;
-  path: string;
-  updated: boolean;
-  skipped: boolean;
-}
-
-function logInfo(event: string, data: Record<string, unknown> = {}): void {
-  console.log(JSON.stringify({ level: "info", event, ...data }));
-}
-
-function logWarn(event: string, data: Record<string, unknown> = {}): void {
-  console.log(JSON.stringify({ level: "warn", event, ...data }));
-}
-
-function logError(message: string, data: Record<string, unknown> = {}): void {
-  console.error(JSON.stringify({ level: "error", message, ...data }));
-}
-
-function parseArgs(argv: string[]) {
-  const flags: Record<string, string | boolean> = {};
-  const positional: string[] = [];
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === "--") continue;
-    if (arg.startsWith("--")) {
-      const raw = arg.slice(2);
-      const eqIndex = raw.indexOf("=");
-      if (eqIndex !== -1) {
-        flags[raw.slice(0, eqIndex)] = raw.slice(eqIndex + 1);
-      } else {
-        const next = argv[i + 1];
-        if (next && !next.startsWith("--")) {
-          flags[raw] = next;
-          i += 1;
-        } else {
-          flags[raw] = true;
-        }
-      }
-    } else {
-      positional.push(arg);
-    }
-  }
-  return { flags, positional };
-}
-
-function readManifest(): Manifest {
-  const raw = readFileSync(MANIFEST_PATH, "utf-8");
-  return parse(raw) as Manifest;
-}
-
-async function runCommand(
-  command: string,
-  args: string[],
-  cwd: string,
-  dryRun: boolean,
-): Promise<void> {
-  if (dryRun) {
-    logInfo("dry-run", { command, args, cwd });
-    return;
-  }
-
-  await new Promise<void>((resolvePromise, rejectPromise) => {
-    const child = spawn(command, args, { cwd, stdio: "inherit" });
-    child.on("error", rejectPromise);
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolvePromise();
-        return;
-      }
-      rejectPromise(new Error(`Command failed (${command} ${args.join(" ")})`));
-    });
-  });
-}
-
-async function runCommandCapture(
-  command: string,
-  args: string[],
-  cwd: string,
-  dryRun: boolean,
-): Promise<string> {
-  if (dryRun) {
-    logInfo("dry-run", { command, args, cwd });
-    return "";
-  }
-
-  return new Promise<string>((resolvePromise, rejectPromise) => {
-    const child = spawn(command, args, {
-      cwd,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (chunk) => {
-      stdout += String(chunk);
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr += String(chunk);
-    });
-    child.on("error", rejectPromise);
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolvePromise(stdout.trim());
-        return;
-      }
-      rejectPromise(
-        new Error(
-          stderr.trim() || `Command failed (${command} ${args.join(" ")})`,
-        ),
-      );
-    });
-  });
-}
 
 function stripPublishJob(template: string): string {
   const next = template.replace(/\n\n  publish:[\s\S]*$/, "\n");
@@ -195,8 +68,7 @@ function updatePackageJson(
     logWarn("package-json-missing", { path: packagePath });
     return { changed: false };
   }
-  const raw = readFileSync(packagePath, "utf-8");
-  const pkg = JSON.parse(raw) as Record<string, unknown>;
+  const pkg = safeReadJson<Record<string, unknown>>(packagePath);
 
   let changed = false;
   if (!pkg.scripts || typeof pkg.scripts !== "object") {
@@ -341,10 +213,10 @@ async function main() {
   const filter = typeof flags.filter === "string" ? flags.filter : undefined;
 
   if (!existsSync(REPOS_DIR)) {
-    throw new Error("repos/ directory not found");
+    throw new Error("repos/ directory not found. Run 'just setup' to clone workspace packages");
   }
 
-  const manifest = readManifest();
+  const manifest: Manifest = readManifest();
   const infra = manifest.infrastructure.map(
     (entry) => entry.name ?? entry.repo,
   );

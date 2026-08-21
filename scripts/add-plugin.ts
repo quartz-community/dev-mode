@@ -1,97 +1,15 @@
-import { readFileSync, existsSync, mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { execSync, spawn } from "node:child_process";
-import { parse } from "yaml";
+import { execSync } from "node:child_process";
+import { parseArgs } from "./lib/args.js";
+import { runCommand, TIMEOUTS } from "./lib/exec.js";
+import { getDefaultBranch } from "./lib/git.js";
+import { logError, logInfo, logWarn } from "./lib/log.js";
+import { readManifest } from "./lib/manifest.js";
+import { validatePluginName } from "./lib/validation.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPOS_DIR = join(ROOT, "repos");
-const MANIFEST_PATH = join(ROOT, "dev.yaml");
-
-function getDefaultBranch(ghRepo: string): string | undefined {
-  try {
-    const output = execSync(
-      `git ls-remote --symref https://github.com/${ghRepo}.git HEAD`,
-      {
-        encoding: "utf-8",
-        timeout: 15_000,
-        stdio: ["ignore", "pipe", "ignore"],
-      },
-    );
-    const match = output.match(/^ref: refs\/heads\/(\S+)\tHEAD$/m);
-    return match?.[1];
-  } catch {
-    return undefined;
-  }
-}
-
-interface ManifestPlugin {
-  name: string;
-  repo?: string;
-}
-
-interface Manifest {
-  version: number;
-  org: string;
-  plugins: ManifestPlugin[];
-}
-
-function logInfo(event: string, data: Record<string, unknown> = {}): void {
-  console.log(JSON.stringify({ level: "info", event, ...data }));
-}
-
-function logError(message: string, data: Record<string, unknown> = {}): void {
-  console.error(JSON.stringify({ level: "error", message, ...data }));
-}
-
-function parseArgs(argv: string[]) {
-  const flags: Record<string, string | boolean> = {};
-  const positional: string[] = [];
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg.startsWith("--")) {
-      const key = arg.slice(2);
-      const next = argv[i + 1];
-      if (next && !next.startsWith("--")) {
-        flags[key] = next;
-        i += 1;
-      } else {
-        flags[key] = true;
-      }
-    } else {
-      positional.push(arg);
-    }
-  }
-  return { flags, positional };
-}
-
-function readManifest(): Manifest {
-  const raw = readFileSync(MANIFEST_PATH, "utf-8");
-  return parse(raw) as Manifest;
-}
-
-async function runCommand(
-  command: string,
-  args: string[],
-  cwd: string,
-  dryRun: boolean,
-): Promise<void> {
-  if (dryRun) {
-    logInfo("dry-run", { command, args, cwd });
-    return;
-  }
-
-  await new Promise<void>((resolvePromise, rejectPromise) => {
-    const child = spawn(command, args, { cwd, stdio: "inherit" });
-    child.on("error", rejectPromise);
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolvePromise();
-        return;
-      }
-      rejectPromise(new Error(`Command failed (${command} ${args.join(" ")})`));
-    });
-  });
-}
 
 async function main() {
   const { flags, positional } = parseArgs(process.argv.slice(2));
@@ -102,6 +20,7 @@ async function main() {
       "Usage: pnpm add-plugin <name> [--repo <owner/repo>] [--dry-run]",
     );
   }
+  validatePluginName(pluginName);
 
   const manifest = readManifest();
   const repoOverride = typeof flags.repo === "string" ? flags.repo : undefined;
@@ -119,25 +38,33 @@ async function main() {
 
   const targetDir = join(REPOS_DIR, pluginName);
   if (existsSync(targetDir)) {
-    throw new Error(`Repo already exists: ${targetDir}`);
+    throw new Error(`Repo already exists: ${targetDir}. Remove it first with 'just remove-plugin ${pluginName}'`);
   }
 
   const branch = getDefaultBranch(repo);
   logInfo("clone-start", { repo, branch, path: targetDir });
-  await runCommand(
-    "git",
-    [
-      "clone",
-      "--depth=1",
-      "--single-branch",
-      ...(branch ? ["--branch", branch] : []),
-      `https://github.com/${repo}.git`,
-      targetDir,
-    ],
-    ROOT,
-    dryRun,
-  );
-  logInfo("clone-done", { repo, path: targetDir });
+  try {
+    await runCommand(
+      "git",
+      [
+        "clone",
+        "--depth=1",
+        "--single-branch",
+        ...(branch ? ["--branch", branch] : []),
+        `https://github.com/${repo}.git`,
+        targetDir,
+      ],
+      ROOT,
+      dryRun,
+    );
+    logInfo("clone-done", { repo, path: targetDir });
+  } catch (error) {
+    if (existsSync(targetDir)) {
+      rmSync(targetDir, { recursive: true, force: true });
+      logWarn("clone-cleanup", { repo, path: targetDir });
+    }
+    throw error;
+  }
 
   await import("./generate-turbo-graph");
 
@@ -149,10 +76,15 @@ async function main() {
       cwd: ROOT,
     });
   } else {
-    execSync("pnpm install", { stdio: "inherit", cwd: ROOT });
+    execSync("pnpm install", {
+      stdio: "inherit",
+      cwd: ROOT,
+      timeout: TIMEOUTS.PNPM_INSTALL,
+    });
     execSync(`pnpm turbo run build --filter=@${manifest.org}/${pluginName}`, {
       stdio: "inherit",
       cwd: ROOT,
+      timeout: TIMEOUTS.TURBO_BUILD,
     });
   }
 

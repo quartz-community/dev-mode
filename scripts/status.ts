@@ -1,6 +1,10 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { spawn } from "node:child_process";
+import { parseArgs } from "./lib/args.js";
+import { runWithConcurrency } from "./lib/concurrency.js";
+import { runCommandCapture } from "./lib/exec.js";
+import { safeReadJson } from "./lib/json.js";
+import { logError } from "./lib/log.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPOS_DIR = join(ROOT, "repos");
@@ -13,64 +17,11 @@ interface RepoStatus {
   behind: number | null;
 }
 
-function logError(message: string, data: Record<string, unknown> = {}): void {
-  console.error(JSON.stringify({ level: "error", message, ...data }));
-}
-
-function parseArgs(argv: string[]) {
-  const flags: Record<string, string | boolean> = {};
-  const positional: string[] = [];
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg.startsWith("--")) {
-      const key = arg.slice(2);
-      const next = argv[i + 1];
-      if (next && !next.startsWith("--")) {
-        flags[key] = next;
-        i += 1;
-      } else {
-        flags[key] = true;
-      }
-    } else {
-      positional.push(arg);
-    }
-  }
-  return { flags, positional };
-}
-
-async function runCommand(
-  command: string,
-  args: string[],
-  cwd: string,
-): Promise<string> {
-  return new Promise<string>((resolvePromise, rejectPromise) => {
-    const child = spawn(command, args, {
-      cwd,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    let stdout = "";
-    let stderr = "";
-    child.stdout.on("data", (chunk) => {
-      stdout += String(chunk);
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr += String(chunk);
-    });
-    child.on("error", rejectPromise);
-    child.on("close", (code) => {
-      if (code === 0) {
-        resolvePromise(stdout.trim());
-        return;
-      }
-      rejectPromise(new Error(stderr.trim() || "Command failed"));
-    });
-  });
-}
 
 function readPackageName(repoPath: string, fallback: string): string {
   const pkgPath = join(repoPath, "package.json");
   if (!existsSync(pkgPath)) return fallback;
-  const data = JSON.parse(readFileSync(pkgPath, "utf-8"));
+  const data = safeReadJson<Record<string, unknown>>(pkgPath);
   return typeof data.name === "string" ? data.name : fallback;
 }
 
@@ -105,7 +56,7 @@ async function main() {
   const jsonOutput = Boolean(flags.json);
 
   if (!existsSync(REPOS_DIR)) {
-    throw new Error("repos/ directory not found");
+    throw new Error("repos/ directory not found. Run 'just setup' to clone workspace packages");
   }
 
   const repoDirs = readdirSync(REPOS_DIR, { withFileTypes: true })
@@ -113,25 +64,28 @@ async function main() {
     .map((entry) => entry.name);
 
   const statuses: RepoStatus[] = [];
-  for (const repo of repoDirs) {
+  await runWithConcurrency(repoDirs, 8, async (repo) => {
     const repoPath = join(REPOS_DIR, repo);
     const packageName = readPackageName(repoPath, repo);
-    const branch = await runCommand(
+    const branch = await runCommandCapture(
       "git",
       ["rev-parse", "--abbrev-ref", "HEAD"],
       repoPath,
+      false,
     );
-    const dirtyOutput = await runCommand(
+    const dirtyOutput = await runCommandCapture(
       "git",
       ["status", "--porcelain"],
       repoPath,
+      false,
     );
     let behind: number | null = null;
     try {
-      const behindRaw = await runCommand(
+      const behindRaw = await runCommandCapture(
         "git",
         ["rev-list", "--count", "HEAD...@{u}"],
         repoPath,
+        false,
       );
       behind = Number(behindRaw);
       if (!Number.isFinite(behind)) behind = null;
@@ -146,7 +100,9 @@ async function main() {
       dirty: dirtyOutput.length > 0,
       behind,
     });
-  }
+  });
+
+  statuses.sort((a, b) => a.repo.localeCompare(b.repo));
 
   if (jsonOutput) {
     console.log(JSON.stringify({ repos: statuses }, null, 2));

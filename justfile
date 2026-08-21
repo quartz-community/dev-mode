@@ -6,8 +6,12 @@ default:
 
 # --- Setup & Teardown ---
 
+# Verify development prerequisites (Node 22+, pnpm 10+, git)
+check-env:
+    @pnpm tsx scripts/check-env.ts
+
 # Clone repos and set up workspace (preset: minimal, content-pipeline, ui, full)
-setup preset="full":
+setup preset="full": check-env
     pnpm run dev-setup -- --preset {{preset}}
 
 # Clone repos (dry run — show what would happen)
@@ -54,6 +58,10 @@ typecheck:
 typecheck-affected:
     pnpm turbo run typecheck --affected
 
+# Run unit tests for workspace scripts
+test-unit:
+    pnpm vitest run
+
 # Run all plugin tests
 test:
     pnpm turbo run test
@@ -70,6 +78,20 @@ lint:
 check:
     pnpm turbo run typecheck lint format:check test
 
+# Watch for changes and rebuild affected packages
+watch:
+    pnpm turbo watch build
+
+# Watch + serve Quartz with live-reload (full dev loop)
+dev: generate-dev-config
+    #!/usr/bin/env bash
+    set -euo pipefail
+    trap 'just clean-dev-config; kill $TURBO_PID 2>/dev/null || true' EXIT
+    pnpm turbo watch build &
+    TURBO_PID=$!
+    cd repos/quartz && node quartz/bootstrap-cli.mjs build --serve -d docs
+    wait $TURBO_PID
+
 # --- Quartz Live Server ---
 
 # Generate quartz.config.yaml with local path plugin specifiers for dev-mode
@@ -78,18 +100,32 @@ generate-dev-config:
     #!/usr/bin/env bash
     node -e "
     const fs = require('fs');
+    const path = require('path');
     const yaml = require('yaml');
+    const pkgNameToDir = new Map();
+    for (const dir of fs.readdirSync('repos', { withFileTypes: true })) {
+      if (!dir.isDirectory()) continue;
+      const pkgPath = path.join('repos', dir.name, 'package.json');
+      if (!fs.existsSync(pkgPath)) continue;
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        if (pkg.name) pkgNameToDir.set(pkg.name, dir.name);
+      } catch {}
+    }
     const config = yaml.parse(fs.readFileSync('repos/quartz/quartz.config.default.yaml', 'utf-8'));
     config.plugins = config.plugins.map(entry => {
       const source = entry.source;
       if (typeof source === 'string') {
-        let name;
+        let npmName;
         if (source.startsWith('github:quartz-community/')) {
-          name = source.replace('github:quartz-community/', '');
+          npmName = '@quartz-community/' + source.replace('github:quartz-community/', '');
         } else if (source.startsWith('@quartz-community/')) {
-          name = source.replace('@quartz-community/', '');
+          npmName = source;
         }
-        if (name) return { ...entry, source: '../' + name };
+        if (npmName) {
+          const dirName = pkgNameToDir.get(npmName);
+          if (dirName) return { ...entry, source: '../' + dirName };
+        }
       }
       return entry;
     });
@@ -283,10 +319,10 @@ regen-lockfile name:
     dir="repos/{{name}}"
     [ -d "$dir" ] || { echo "Not found: $dir"; exit 1; }
     tmp=$(mktemp -d)
+    trap 'rm -rf "$tmp"' EXIT
     cp -r "$dir" "$tmp/pkg"
     (cd "$tmp/pkg" && rm -f package-lock.json && npm install --ignore-scripts --package-lock-only 2>&1 | tail -2)
     cp "$tmp/pkg/package-lock.json" "$dir/package-lock.json"
-    rm -rf "$tmp"
     echo "Regenerated $dir/package-lock.json (standalone)"
 
 # Regenerate package-lock.json for ALL plugin repos outside the workspace
@@ -300,13 +336,16 @@ regen-lockfiles:
         [ "$name" = "quartz" ] && continue
         [ -f "$dir/package.json" ] || continue
         tmp=$(mktemp -d)
+        cleanup() { rm -rf "$tmp"; }
+        trap cleanup EXIT
         cp -r "$dir" "$tmp/pkg"
         (cd "$tmp/pkg" && rm -f package-lock.json && npm install --ignore-scripts --package-lock-only 2>/dev/null 1>/dev/null)
         if [ -f "$tmp/pkg/package-lock.json" ]; then
             cp "$tmp/pkg/package-lock.json" "$dir/package-lock.json"
             count=$((count + 1))
         fi
-        rm -rf "$tmp"
+        cleanup
+        trap - EXIT
     done
     echo "Regenerated $count lockfiles (standalone)"
 

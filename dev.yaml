@@ -124,3 +124,23 @@ presets:
   full:
     description: "Everything"
     plugins: ["*"]
+
+workspace:
+  singletons:
+    - preact
+    - unified
+    - vfile
+  excludedRepos:
+    - dev-mode
+    - awesome-quartz
+    - demo-vault
+    - registry
+    - v5
+    - quartz-build
+    - amethyst
+    - quartz-plugin-template
+    - external-quartz-leaflet-map-plugin
+    - micromark-extension-gfm-task-list-item-quartz
+    - micromark-extensions-ofm
+    - rehype-ofm
+    - remark-ofm

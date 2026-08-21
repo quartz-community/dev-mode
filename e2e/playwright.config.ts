@@ -3,7 +3,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   timeout: 30_000,
-  retries: 0,
+  retries: process.env.CI ? 2 : 0,
   use: {
     trace: "on-first-retry",
     launchOptions: {
@@ -38,6 +38,18 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 10_000,
       env: { FIXTURE: "bug-repro", BASE_PATH: "/bug-repro", PORT: "4175" },
+    },
+    {
+      command: "npx tsx e2e/helpers/serve-fixture.ts",
+      cwd: "..",
+      port: 4176,
+      reuseExistingServer: !process.env.CI,
+      timeout: 10_000,
+      env: {
+        FIXTURE: "footer-disabled",
+        BASE_PATH: "/footer-disabled",
+        PORT: "4176",
+      },
     },
   ],
   projects: [

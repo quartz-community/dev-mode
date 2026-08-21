@@ -2,11 +2,13 @@ import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import yaml from "yaml";
+import { TIMEOUTS } from "./lib/exec.js";
 
 type Manifest = {
   org: string;
   plugins: Array<string | { name: string }>;
   infrastructure?: Array<{ name: string }>;
+  workspace?: { excludedRepos?: string[] };
 };
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -14,7 +16,7 @@ const DEV_YAML = resolve(ROOT, "dev.yaml");
 
 function ensureToken(): void {
   if (!process.env.GITHUB_TOKEN) {
-    console.error("GITHUB_TOKEN is required to sync the manifest.");
+    console.error("GITHUB_TOKEN is required to sync the manifest.\n  Set it with: export GITHUB_TOKEN=ghp_...\n  Create at: https://github.com/settings/tokens");
     process.exit(1);
   }
 }
@@ -26,12 +28,19 @@ function listOrgRepos(): Array<{ name: string; description?: string | null }> {
       cwd: ROOT,
       encoding: "utf-8",
       stdio: ["ignore", "pipe", "pipe"],
+      timeout: TIMEOUTS.GIT_OP,
     },
   );
-  return JSON.parse(output) as Array<{
-    name: string;
-    description?: string | null;
-  }>;
+  let repos;
+  try {
+    repos = JSON.parse(output) as Array<{
+      name: string;
+      description?: string | null;
+    }>;
+  } catch {
+    throw new Error("Failed to parse GitHub API response from 'gh repo list'");
+  }
+  return repos;
 }
 
 function readManifest(): Manifest {
@@ -60,21 +69,7 @@ function main(): void {
   const infraNames = new Set(
     manifest.infrastructure?.map((entry) => entry.name) ?? [],
   );
-  const excluded = new Set([
-    "dev-mode",
-    "awesome-quartz",
-    "demo-vault",
-    "registry",
-    "v5",
-    "quartz-build",
-    "amethyst",
-    "quartz-plugin-template",
-    "external-quartz-leaflet-map-plugin",
-    "micromark-extension-gfm-task-list-item-quartz",
-    "micromark-extensions-ofm",
-    "rehype-ofm",
-    "remark-ofm",
-  ]);
+  const excluded = new Set(manifest.workspace?.excludedRepos ?? []);
 
   const additions = repos
     .map((repo) => repo.name)
