@@ -31,6 +31,7 @@ export interface Manifest {
   infrastructure: ManifestRepo[];
   themes?: ManifestThemes;
   plugins: ManifestPlugin[];
+  tools?: ManifestRepo[];
   presets?: Record<string, ManifestPreset>;
   workspace?: WorkspaceConfig;
 }

@@ -64,6 +64,12 @@ async function main() {
     });
   }
 
+  if (manifest.tools?.length) {
+    manifest.tools.forEach((tool) => {
+      repos.push(normalizeRepo(tool.name ?? tool.repo, tool.repo, tool.branch));
+    });
+  }
+
   for (const plugin of selectedPlugins) {
     const manifestEntry = manifest.plugins.find((p) => p.name === plugin);
     const repo = manifestEntry?.repo ?? `${manifest.org}/${plugin}`;

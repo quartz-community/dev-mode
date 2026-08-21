@@ -350,6 +350,11 @@
         "@quartz-community/utils#build"
       ]
     },
+    "quartz-syncer#build": {
+      "dependsOn": [
+        "@quartz-community/remark-obsidian#build"
+      ]
+    },
     "@quartz-community/syntax-highlighting#build": {
       "dependsOn": [
         "@quartz-community/types#build"
