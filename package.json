@@ -51,7 +51,7 @@
     "typescript": "^5.9.3",
     "unified": "^11.0.5",
     "vfile": "^6.0.3",
-    "vitest": "catalog:",
+    "vitest": "^2.1.9",
     "yaml": "^2.8.0"
   }
 }
