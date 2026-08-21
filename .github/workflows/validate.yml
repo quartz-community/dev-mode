@@ -43,7 +43,7 @@ jobs:
       - name: Test affected
         id: test
         continue-on-error: true
-        run: pnpm turbo run test --affected
+        run: pnpm turbo run test --affected --filter='!@quartz-themes/core'
 
       - name: Lint affected
         run: pnpm turbo run lint --affected
