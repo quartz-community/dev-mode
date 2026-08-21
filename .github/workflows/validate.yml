@@ -41,6 +41,8 @@ jobs:
         run: pnpm turbo run typecheck --affected
 
       - name: Test affected
+        id: test
+        continue-on-error: true
         run: pnpm turbo run test --affected
 
       - name: Lint affected
@@ -63,3 +65,9 @@ jobs:
         run: pnpm exec playwright test --config e2e/playwright.config.ts
         env:
           CI: "true"
+
+      - name: Check test results
+        if: steps.test.outcome == 'failure'
+        run: |
+          echo "::error::Test step failed — see 'Test affected' step above for details"
+          exit 1
