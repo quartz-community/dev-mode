@@ -40,6 +40,10 @@ status:
 validate:
     pnpm validate
 
+# Diagnose published dependency reachability, lockfiles, and clean installs
+doctor:
+    pnpm doctor
+
 # --- Build & Check ---
 
 # Build all packages in topological order
@@ -320,9 +324,11 @@ regen-lockfile name:
     [ -d "$dir" ] || { echo "Not found: $dir"; exit 1; }
     tmp=$(mktemp -d)
     trap 'rm -rf "$tmp"' EXIT
-    cp -r "$dir" "$tmp/pkg"
-    (cd "$tmp/pkg" && rm -f package-lock.json && npm install --ignore-scripts --package-lock-only 2>&1 | tail -2)
-    cp "$tmp/pkg/package-lock.json" "$dir/package-lock.json"
+    cp "$dir/package.json" "$tmp/package.json"
+    [ ! -f "$dir/.npmrc" ] || cp "$dir/.npmrc" "$tmp/.npmrc"
+    (cd "$tmp" && npm install --ignore-scripts --package-lock-only)
+    pnpm tsx scripts/doctor.ts --skip-network --lockfile "$tmp/package-lock.json"
+    cp "$tmp/package-lock.json" "$dir/package-lock.json"
     echo "Regenerated $dir/package-lock.json (standalone)"
 
 # Regenerate package-lock.json for ALL plugin repos outside the workspace
@@ -338,10 +344,12 @@ regen-lockfiles:
         tmp=$(mktemp -d)
         cleanup() { rm -rf "$tmp"; }
         trap cleanup EXIT
-        cp -r "$dir" "$tmp/pkg"
-        (cd "$tmp/pkg" && rm -f package-lock.json && npm install --ignore-scripts --package-lock-only 2>/dev/null 1>/dev/null)
-        if [ -f "$tmp/pkg/package-lock.json" ]; then
-            cp "$tmp/pkg/package-lock.json" "$dir/package-lock.json"
+        cp "$dir/package.json" "$tmp/package.json"
+        [ ! -f "$dir/.npmrc" ] || cp "$dir/.npmrc" "$tmp/.npmrc"
+        (cd "$tmp" && npm install --ignore-scripts --package-lock-only)
+        if [ -f "$tmp/package-lock.json" ]; then
+            pnpm tsx scripts/doctor.ts --skip-network --lockfile "$tmp/package-lock.json"
+            cp "$tmp/package-lock.json" "$dir/package-lock.json"
             count=$((count + 1))
         fi
         cleanup
@@ -362,8 +370,7 @@ update-quartz-lockfile:
         echo "Lockfile unchanged — nothing to update"
         exit 0
     fi
-    echo "Updated versions:"
-    git -C repos/quartz diff package-lock.json | grep '"version"' | head -10
+    git -C repos/quartz diff --stat -- package-lock.json
     git -C repos/quartz add package-lock.json
     git -C repos/quartz commit -m "chore: update lockfile for latest plugin releases"
     echo "Committed. Run 'just push' to push."

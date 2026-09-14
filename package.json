@@ -23,6 +23,7 @@
     "sync": "tsx scripts/sync.ts",
     "status": "tsx scripts/status.ts",
     "validate": "tsx scripts/validate.ts",
+    "doctor": "tsx scripts/doctor.ts",
     "migrate-to-npm": "tsx scripts/migrate-to-npm.ts",
     "deploy-changesets": "tsx scripts/deploy-changesets.ts",
     "generate-turbo-graph": "tsx scripts/generate-turbo-graph.ts",
@@ -38,6 +39,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",
+    "@types/semver": "^7.8.0",
     "esbuild": "^0.27.0",
     "github-slugger": "^2.0.0",
     "hast-util-to-jsx-runtime": "^2.3.6",
@@ -45,6 +47,7 @@
     "preact-render-to-string": "^6.6.5",
     "prettier": "^3.8.1",
     "sass": "^1.97.0",
+    "semver": "^7.8.5",
     "serve": "^14.2.6",
     "tsx": "^4.21.0",
     "turbo": "^2.5.0",

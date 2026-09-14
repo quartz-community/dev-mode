@@ -1,0 +1,31 @@
+name: Doctor
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install root dependencies
+        run: pnpm install --ignore-workspace
+
+      - name: Setup full workspace
+        run: pnpm run dev-setup --preset full
+
+      - name: Run diagnostic suite
+        run: pnpm doctor

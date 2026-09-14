@@ -8,3 +8,6 @@ export * from "./git.js";
 export * from "./semver.js";
 export * from "./validation.js";
 export * from "./json.js";
+export * from "./registry.js";
+export * from "./lockfile.js";
+export * from "./cleanroom.js";

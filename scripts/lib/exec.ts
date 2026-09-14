@@ -5,6 +5,7 @@ export const TIMEOUTS = {
   GIT_CLONE: 60_000,
   GIT_OP: 10_000,
   PNPM_INSTALL: 600_000,
+  NPM_INSTALL: 600_000,
   TURBO_BUILD: 900_000,
 } as const;
 
@@ -113,7 +114,10 @@ export async function runCommandCapture(
         return;
       }
       rejectPromise(
-        new Error(stderr.trim() || `Command failed (${command} ${args.join(" ")})`),
+        new Error(
+          [stdout.trim(), stderr.trim()].filter(Boolean).join("\n") ||
+            `Command failed (${command} ${args.join(" ")})`,
+        ),
       );
     });
   });

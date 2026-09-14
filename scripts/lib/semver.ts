@@ -1,3 +1,5 @@
+import semver from "semver";
+
 export type Semver = { major: number; minor: number; patch: number };
 
 export function parseVersion(raw: string): Semver {
@@ -45,9 +47,15 @@ export function expandToken(
   if (token.startsWith("^")) {
     const base = parsePartialVersion(token.slice(1));
     if (!base) return [];
+    const upper =
+      base.major > 0
+        ? bumpMajor(base)
+        : base.minor > 0
+          ? bumpMinor(base)
+          : { major: 0, minor: 0, patch: base.patch + 1 };
     return [
       { op: ">=", version: base },
-      { op: "<", version: bumpMajor(base) },
+      { op: "<", version: upper },
     ];
   }
 
@@ -108,27 +116,6 @@ export function satisfiesComparator(
 }
 
 export function satisfiesRange(current: Semver, range: string): boolean {
-  const trimmed = range.trim();
-  if (!trimmed || trimmed === "*") return true;
-
-  const orParts = trimmed
-    .split("||")
-    .map((part) => part.trim())
-    .filter(Boolean);
-  for (const part of orParts) {
-    const tokens = part.split(/\s+/).filter(Boolean);
-    let ok = true;
-    for (const token of tokens) {
-      const comparators = expandToken(token);
-      for (const comparator of comparators) {
-        if (!satisfiesComparator(current, comparator)) {
-          ok = false;
-          break;
-        }
-      }
-      if (!ok) break;
-    }
-    if (ok) return true;
-  }
-  return false;
+  const version = `${current.major}.${current.minor}.${current.patch}`;
+  return semver.satisfies(version, range, { includePrerelease: false });
 }
