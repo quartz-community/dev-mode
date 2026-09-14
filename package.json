@@ -25,6 +25,7 @@
     "validate": "tsx scripts/validate.ts",
     "doctor": "tsx scripts/doctor.ts",
     "migrate-to-npm": "tsx scripts/migrate-to-npm.ts",
+    "migrate-to-v1": "tsx scripts/migrate-to-v1.ts",
     "deploy-changesets": "tsx scripts/deploy-changesets.ts",
     "generate-turbo-graph": "tsx scripts/generate-turbo-graph.ts",
     "build": "turbo run build",

@@ -238,6 +238,19 @@ commit repo msg:
     git -C repos/{{repo}} add --all --ignore-errors -- . ':!dist/'
     git -C repos/{{repo}} commit -m "{{msg}}"
 
+# Commit specific files in a repo (stages ONLY the listed paths)
+commit-files repo msg +files:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    [ -d "repos/{{repo}}/.git" ] || { echo "Not a git repo: repos/{{repo}}"; exit 1; }
+    git -C "repos/{{repo}}" diff --cached --quiet || { echo "Refusing to include pre-existing staged changes"; exit 1; }
+    git -C "repos/{{repo}}" add -- {{files}}
+    git -C "repos/{{repo}}" commit -m "{{msg}}" -- {{files}}
+
+# Push a single repo (does not touch other repos)
+push-repo repo: check
+    git -C repos/{{repo}} push
+
 # --- Utilities ---
 
 # Regenerate the turbo dependency graph from plugin package.json files
@@ -255,6 +268,10 @@ migrate-npm:
 # Migrate plugin repos to npm publishing (dry run)
 migrate-npm-dry:
     pnpm migrate-to-npm -- --dry-run
+
+# Plan the coordinated @quartz-community/* 1.0 migration (writes nothing)
+migrate-v1-plan:
+    pnpm migrate-to-v1 --plan
 
 # Deploy Changesets to all plugin repos
 deploy-changesets:

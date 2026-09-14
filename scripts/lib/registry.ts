@@ -31,6 +31,13 @@ interface Packument {
   versions?: Record<string, RegistryVersion>;
 }
 
+export interface PackageVersionPresence {
+  name: string;
+  version: string;
+  published: boolean;
+  error?: string;
+}
+
 export function registryUrl(packageName: string): string {
   return `${REGISTRY}/${encodeURIComponent(packageName)}`;
 }
@@ -71,6 +78,44 @@ async function fetchPackument(packageName: string): Promise<Packument> {
     await delay(250 * 2 ** (attempt - 1));
   }
   throw new Error("registry request exhausted retries");
+}
+
+export async function checkPackageVersionPresence(
+  packageNames: string[],
+  version: string,
+): Promise<PackageVersionPresence[]> {
+  const results = new Map<string, PackageVersionPresence>();
+  const fetchResult = await runWithConcurrency(
+    packageNames,
+    8,
+    async (packageName) => {
+      const packument = await fetchPackument(packageName);
+      results.set(packageName, {
+        name: packageName,
+        version,
+        published: Boolean(packument.versions?.[version]),
+      });
+    },
+  );
+
+  for (const { item, error } of fetchResult.failures) {
+    results.set(item, {
+      name: item,
+      version,
+      published: false,
+      error: error.message,
+    });
+  }
+
+  return packageNames.map(
+    (name) =>
+      results.get(name) ?? {
+        name,
+        version,
+        published: false,
+        error: "registry check produced no result",
+      },
+  );
 }
 
 function getEcosystemPackages(reposDir: string): string[] {
