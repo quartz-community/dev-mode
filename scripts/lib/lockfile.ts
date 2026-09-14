@@ -83,9 +83,13 @@ export function detectNestedEcosystemDuplicates(
     .sort((a, b) => a.packageName.localeCompare(b.packageName));
 }
 
-export function analyzeLockfile(lockfile: PackageLock): LockfileCheckResult {
+export function analyzeLockfile(
+  lockfile: PackageLock,
+  integrityOnly = false,
+): LockfileCheckResult {
   const packages = lockfile.packages ?? {};
-  const details: string[] = [];
+  const blockingDetails: string[] = [];
+  const advisoryDetails: string[] = [];
 
   for (const [path, entry] of Object.entries(packages)) {
     if (
@@ -98,19 +102,26 @@ export function analyzeLockfile(lockfile: PackageLock): LockfileCheckResult {
       ]
         .filter(Boolean)
         .join(" and ");
-      details.push(`${path}: missing ${missing}`);
+      blockingDetails.push(`${path}: missing ${missing}`);
     }
   }
 
   for (const duplicate of detectNestedEcosystemDuplicates(packages)) {
-    details.push(
-      `nested duplicate ${duplicate.packageName}: ${duplicate.count} entries, versions ${duplicate.versions.join(", ") || "unknown"}`,
+    advisoryDetails.push(
+      `nested duplicate ${duplicate.packageName}: ${duplicate.count} entries, versions ${duplicate.versions.join(", ") || "unknown"} (advisory: reachability, not blocking)`,
     );
   }
 
   for (const [path, entry] of Object.entries(packages)) {
-    if (entry.extraneous === true) details.push(`extraneous entry: ${path}`);
+    if (entry.extraneous === true)
+      blockingDetails.push(`extraneous entry: ${path}`);
   }
 
-  return { name: "Lockfile integrity", ok: details.length === 0, details };
+  return {
+    name: "Lockfile integrity",
+    ok:
+      blockingDetails.length === 0 &&
+      (integrityOnly || advisoryDetails.length === 0),
+    details: [...blockingDetails, ...advisoryDetails],
+  };
 }

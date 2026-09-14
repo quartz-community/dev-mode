@@ -22,9 +22,7 @@ function formatResults(results: CheckResult[], asJson: boolean): void {
   for (const result of results) {
     const status = result.ok ? "PASS" : "FAIL";
     console.log(`${status}: ${result.name}`);
-    if (!result.ok) {
-      for (const detail of result.details) console.log(`  - ${detail}`);
-    }
+    for (const detail of result.details) console.log(`  - ${detail}`);
   }
 }
 
@@ -39,6 +37,7 @@ async function main(): Promise<void> {
   const args = new Set(process.argv.slice(2));
   const asJson = args.has("--json");
   const skipNetwork = args.has("--skip-network");
+  const integrityOnly = args.has("--integrity-only");
   const targetDir = optionValue("--target", resolve(ROOT, "repos/quartz"));
   const lockfilePath = optionValue(
     "--lockfile",
@@ -48,7 +47,7 @@ async function main(): Promise<void> {
   const lockfile = safeReadJson<PackageLock>(lockfilePath);
   const results: CheckResult[] = [];
   if (!skipNetwork) results.push(await checkRegistryReachability(ROOT));
-  results.push(analyzeLockfile(lockfile));
+  results.push(analyzeLockfile(lockfile, integrityOnly));
   if (!skipNetwork) results.push(await checkCleanRoomInstall(targetDir));
 
   formatResults(results, asJson);
