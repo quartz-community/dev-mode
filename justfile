@@ -343,7 +343,7 @@ regen-lockfile name:
     trap 'rm -rf "$tmp"' EXIT
     cp "$dir/package.json" "$tmp/package.json"
     [ ! -f "$dir/.npmrc" ] || cp "$dir/.npmrc" "$tmp/.npmrc"
-    (cd "$tmp" && npm install --ignore-scripts --package-lock-only --prefer-online)
+    (cd "$tmp" && npm install --ignore-scripts --prefer-online)
     pnpm tsx scripts/doctor.ts --skip-network --integrity-only --lockfile "$tmp/package-lock.json"
     cp "$tmp/package-lock.json" "$dir/package-lock.json"
     echo "Regenerated $dir/package-lock.json (standalone)"
@@ -363,7 +363,7 @@ regen-lockfiles:
         trap cleanup EXIT
         cp "$dir/package.json" "$tmp/package.json"
         [ ! -f "$dir/.npmrc" ] || cp "$dir/.npmrc" "$tmp/.npmrc"
-        (cd "$tmp" && npm install --ignore-scripts --package-lock-only --prefer-online)
+        (cd "$tmp" && npm install --ignore-scripts --prefer-online)
         if [ -f "$tmp/package-lock.json" ]; then
             pnpm tsx scripts/doctor.ts --skip-network --integrity-only --lockfile "$tmp/package-lock.json"
             cp "$tmp/package-lock.json" "$dir/package-lock.json"
