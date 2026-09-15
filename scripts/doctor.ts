@@ -1,7 +1,12 @@
-import { resolve } from "node:path";
+import { existsSync, readdirSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { checkCleanRoomInstall } from "./lib/cleanroom.js";
 import { safeReadJson } from "./lib/json.js";
 import { analyzeLockfile, type PackageLock } from "./lib/lockfile.js";
+import {
+  checkPeerConsistency,
+  type PeerConsistencyPackage,
+} from "./lib/peer-consistency.js";
 import { checkRegistryReachability } from "./lib/registry.js";
 
 type CheckResult = {
@@ -33,6 +38,16 @@ function optionValue(name: string, fallback: string): string {
     : fallback;
 }
 
+function readWorkspacePackages(): PeerConsistencyPackage[] {
+  const reposDir = resolve(ROOT, "repos");
+  if (!existsSync(reposDir)) return [];
+  return readdirSync(reposDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => join(reposDir, entry.name, "package.json"))
+    .filter(existsSync)
+    .map((path) => safeReadJson<PeerConsistencyPackage>(path));
+}
+
 async function main(): Promise<void> {
   const args = new Set(process.argv.slice(2));
   const asJson = args.has("--json");
@@ -48,7 +63,15 @@ async function main(): Promise<void> {
   const results: CheckResult[] = [];
   if (!skipNetwork) results.push(await checkRegistryReachability(ROOT));
   results.push(analyzeLockfile(lockfile, integrityOnly));
-  if (!skipNetwork) results.push(await checkCleanRoomInstall(targetDir));
+
+  const quartzPackage = safeReadJson<PeerConsistencyPackage>(
+    resolve(targetDir, "package.json"),
+  );
+  results.push(checkPeerConsistency(quartzPackage, readWorkspacePackages()));
+
+  if (!skipNetwork) {
+    results.push(...(await checkCleanRoomInstall(targetDir)));
+  }
 
   formatResults(results, asJson);
   if (results.some((result) => !result.ok)) process.exit(1);

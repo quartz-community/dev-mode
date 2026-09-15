@@ -15,70 +15,107 @@ function copyManifestFiles(source: string, destination: string): void {
   if (existsSync(npmrc)) copyFileSync(npmrc, join(destination, ".npmrc"));
 }
 
+function failure(
+  name: string,
+  command: string,
+  error: unknown,
+): CleanRoomCheckResult {
+  return {
+    name,
+    ok: false,
+    details: [
+      `${command} failed: ${error instanceof Error ? error.message : String(error)}`,
+    ],
+  };
+}
+
 export async function checkCleanRoomInstall(
   targetDir: string,
-): Promise<CleanRoomCheckResult> {
-  const name = `Clean-room install (${basename(targetDir)})`;
-  if (!existsSync(join(targetDir, "package.json"))) {
-    return {
-      name,
-      ok: false,
-      details: [`missing package.json in ${targetDir}`],
-    };
+): Promise<CleanRoomCheckResult[]> {
+  const targetName = basename(targetDir);
+  const committedName = `Committed lockfile installs (${targetName})`;
+  const regeneratedName = `Package.json regenerates and installs (${targetName})`;
+  const packagePath = join(targetDir, "package.json");
+  const lockfilePath = join(targetDir, "package-lock.json");
+  if (!existsSync(packagePath)) {
+    const detail = `missing package.json in ${targetDir}`;
+    return [
+      { name: committedName, ok: false, details: [detail] },
+      { name: regeneratedName, ok: false, details: [detail] },
+    ];
   }
 
-  const installDir = mkdtempSync(join(tmpdir(), "quartz-doctor-install-"));
-  const ciDir = mkdtempSync(join(tmpdir(), "quartz-doctor-ci-"));
+  const committedDir = mkdtempSync(join(tmpdir(), "quartz-doctor-committed-"));
+  const regenerateDir = mkdtempSync(
+    join(tmpdir(), "quartz-doctor-regenerate-"),
+  );
+  const regeneratedCiDir = mkdtempSync(
+    join(tmpdir(), "quartz-doctor-regenerated-ci-"),
+  );
   try {
-    copyManifestFiles(targetDir, installDir);
+    let committedResult: CleanRoomCheckResult;
+    if (!existsSync(lockfilePath)) {
+      committedResult = {
+        name: committedName,
+        ok: false,
+        details: [`missing package-lock.json in ${targetDir}`],
+      };
+    } else {
+      copyManifestFiles(targetDir, committedDir);
+      copyFileSync(lockfilePath, join(committedDir, "package-lock.json"));
+      try {
+        await runCommandCapture(
+          "npm",
+          ["ci", "--ignore-scripts"],
+          committedDir,
+          false,
+          { timeout: TIMEOUTS.NPM_INSTALL },
+        );
+        committedResult = { name: committedName, ok: true, details: [] };
+      } catch (error) {
+        committedResult = failure(
+          committedName,
+          "npm ci --ignore-scripts",
+          error,
+        );
+      }
+    }
+
+    let regeneratedResult: CleanRoomCheckResult;
+    copyManifestFiles(targetDir, regenerateDir);
     try {
       await runCommandCapture(
         "npm",
         ["install", "--ignore-scripts", "--package-lock-only"],
-        installDir,
+        regenerateDir,
         false,
         { timeout: TIMEOUTS.NPM_INSTALL },
       );
-    } catch (error) {
-      return {
-        name,
-        ok: false,
-        details: [
-          `npm install --ignore-scripts --package-lock-only failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ],
-      };
-    }
-
-    copyManifestFiles(targetDir, ciDir);
-    copyFileSync(
-      join(installDir, "package-lock.json"),
-      join(ciDir, "package-lock.json"),
-    );
-    try {
+      copyManifestFiles(targetDir, regeneratedCiDir);
+      copyFileSync(
+        join(regenerateDir, "package-lock.json"),
+        join(regeneratedCiDir, "package-lock.json"),
+      );
       await runCommandCapture(
         "npm",
         ["ci", "--ignore-scripts", "--dry-run"],
-        ciDir,
+        regeneratedCiDir,
         false,
         { timeout: TIMEOUTS.NPM_INSTALL },
       );
+      regeneratedResult = { name: regeneratedName, ok: true, details: [] };
     } catch (error) {
-      return {
-        name,
-        ok: false,
-        details: [
-          `npm ci --ignore-scripts --dry-run failed: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ],
-      };
+      regeneratedResult = failure(
+        regeneratedName,
+        "npm install --ignore-scripts --package-lock-only / npm ci --ignore-scripts --dry-run",
+        error,
+      );
     }
 
-    return { name, ok: true, details: [] };
+    return [committedResult, regeneratedResult];
   } finally {
-    rmSync(installDir, { recursive: true, force: true });
-    rmSync(ciDir, { recursive: true, force: true });
+    rmSync(committedDir, { recursive: true, force: true });
+    rmSync(regenerateDir, { recursive: true, force: true });
+    rmSync(regeneratedCiDir, { recursive: true, force: true });
   }
 }

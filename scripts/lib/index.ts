@@ -11,3 +11,4 @@ export * from "./json.js";
 export * from "./registry.js";
 export * from "./lockfile.js";
 export * from "./cleanroom.js";
+export * from "./peer-consistency.js";
