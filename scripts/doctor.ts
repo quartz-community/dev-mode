@@ -1,6 +1,9 @@
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { checkBuildTimePeerAvailability } from "./lib/build-time-peers.js";
+import {
+  checkBuildTimePeerAvailability,
+  type BuildTimePeerPackage,
+} from "./lib/build-time-peers.js";
 import { checkCleanRoomInstall } from "./lib/cleanroom.js";
 import { safeReadJson } from "./lib/json.js";
 import { analyzeLockfile, type PackageLock } from "./lib/lockfile.js";
@@ -39,14 +42,31 @@ function optionValue(name: string, fallback: string): string {
     : fallback;
 }
 
-function readWorkspacePackages(): PeerConsistencyPackage[] {
+function readSourceFiles(directory: string): string[] {
+  if (!existsSync(directory)) return [];
+  const sources: string[] = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      sources.push(...readSourceFiles(path));
+    } else if (/\.[cm]?[jt]sx?$/.test(entry.name)) {
+      sources.push(readFileSync(path, "utf8"));
+    }
+  }
+  return sources;
+}
+
+function readWorkspacePackages(): BuildTimePeerPackage[] {
   const reposDir = resolve(ROOT, "repos");
   if (!existsSync(reposDir)) return [];
   return readdirSync(reposDir, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => join(reposDir, entry.name, "package.json"))
-    .filter(existsSync)
-    .map((path) => safeReadJson<PeerConsistencyPackage>(path));
+    .map((entry) => join(reposDir, entry.name))
+    .filter((directory) => existsSync(join(directory, "package.json")))
+    .map((directory) => ({
+      ...safeReadJson<PeerConsistencyPackage>(join(directory, "package.json")),
+      sourceFiles: readSourceFiles(join(directory, "src")),
+    }));
 }
 
 async function main(): Promise<void> {
