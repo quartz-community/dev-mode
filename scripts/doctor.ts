@@ -1,5 +1,6 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { checkBuildTimePeerAvailability } from "./lib/build-time-peers.js";
 import { checkCleanRoomInstall } from "./lib/cleanroom.js";
 import { safeReadJson } from "./lib/json.js";
 import { analyzeLockfile, type PackageLock } from "./lib/lockfile.js";
@@ -67,7 +68,9 @@ async function main(): Promise<void> {
   const quartzPackage = safeReadJson<PeerConsistencyPackage>(
     resolve(targetDir, "package.json"),
   );
-  results.push(checkPeerConsistency(quartzPackage, readWorkspacePackages()));
+  const workspacePackages = readWorkspacePackages();
+  results.push(checkPeerConsistency(quartzPackage, workspacePackages));
+  results.push(checkBuildTimePeerAvailability(workspacePackages));
 
   if (!skipNetwork) {
     results.push(...(await checkCleanRoomInstall(targetDir)));

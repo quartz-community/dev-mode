@@ -12,3 +12,4 @@ export * from "./registry.js";
 export * from "./lockfile.js";
 export * from "./cleanroom.js";
 export * from "./peer-consistency.js";
+export * from "./build-time-peers.js";
