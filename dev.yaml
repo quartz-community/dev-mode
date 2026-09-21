@@ -1,11 +1,8 @@
 version: 1
-
 org: quartz-community
-
 core:
   repo: jackyzha0/quartz
   branch: v5
-
 infrastructure:
   - name: types
     repo: quartz-community/types
@@ -17,14 +14,12 @@ infrastructure:
     repo: quartz-community/rehype-obsidian
   - name: remark-obsidian
     repo: quartz-community/remark-obsidian
-
 themes:
   org: quartz-themes
   packages:
     - name: quartz-themes-core
       repo: quartz-themes/core
       branch: main
-
 plugins:
   - name: syntax-highlighting
   - name: obsidian-flavored-markdown
@@ -73,19 +68,20 @@ plugins:
   - name: obsidian-plugin-excalidraw
   - name: obsidian-plugin-leaflet
   - name: obsidian-plugin-ttrpg-tools-maps
-
+  - name: marketplace
+  - name: plugin-template
+  - name: tui
 presets:
   minimal:
-    description: "Core + infrastructure + essential transformers"
+    description: Core + infrastructure + essential transformers
     plugins:
       - syntax-highlighting
       - obsidian-flavored-markdown
       - github-flavored-markdown
       - description
       - crawl-links
-
   content-pipeline:
-    description: "All transformers + filters"
+    description: All transformers + filters
     plugins:
       - syntax-highlighting
       - obsidian-flavored-markdown
@@ -98,9 +94,8 @@ presets:
       - hard-line-breaks
       - remove-draft
       - explicit-publish
-
   ui:
-    description: "All component plugins"
+    description: All component plugins
     plugins:
       - explorer
       - search
@@ -120,16 +115,14 @@ presets:
       - comments
       - tag-list
       - note-properties
-
   full:
-    description: "Everything"
-    plugins: ["*"]
-
+    description: Everything
+    plugins:
+      - "*"
 tools:
   - name: syncer
     repo: saberzero1/quartz-syncer
     branch: quartz-npm-plugins-rework
-
 workspace:
   singletons:
     - preact
