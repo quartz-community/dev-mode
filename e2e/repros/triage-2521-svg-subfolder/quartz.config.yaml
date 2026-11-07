@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2521-svg-subfolder"
+  baseUrl: localhost

@@ -1,0 +1,17 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2509-theme-colors-ignored"
+  baseUrl: localhost
+  theme:
+    colors:
+      lightMode:
+        darkgray: "#ff0000"
+      darkMode:
+        darkgray: "#ff0000"
+plugins:
+  core:
+    enabled: true
+    options:
+      # obsidian template uses theme "default" (not installed in the workspace;
+      # loading it would npm-install). tokyo-night is installed and uses the same path.
+      theme: tokyo-night

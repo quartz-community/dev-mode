@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2574-goatcounter-double"
+  baseUrl: localhost
+  analytics:
+    provider: goatcounter
+    websiteId: test
+    # local stub instead of https://gc.zgo.at/count.js (blocked/uncountable in tests)
+    scriptSrc: /gc-stub.js

@@ -1,0 +1,1 @@
+{"nodes": [{"id": "a", "type": "text", "text": "md link: [Note](Note.md)\n\nwikilink: [[Note]]\n\nnested: [Other](sub/Other%20Note.md)", "x": 0, "y": 0, "width": 400, "height": 200}, {"id": "b", "type": "file", "file": "Note.md", "x": 500, "y": 0, "width": 300, "height": 200}], "edges": []}

@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2595-pele-theme"
+  baseUrl: localhost
+plugins:
+  obsidian-flavored-markdown:
+    enabled: true
+    options:
+      diagramRenderer: pele

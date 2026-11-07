@@ -1,0 +1,5 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2531-explicit-publish-assets"
+  baseUrl: localhost
+enable: [explicit-publish]

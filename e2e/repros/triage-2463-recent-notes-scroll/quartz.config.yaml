@@ -1,0 +1,15 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2463-recent-notes-scroll"
+  baseUrl: localhost
+plugins:
+  recent-notes:
+    enabled: true
+    options:
+      title: Latest
+      limit: 10
+      linkToMore: false
+      showTags: false
+    layout:
+      position: left
+      priority: 20

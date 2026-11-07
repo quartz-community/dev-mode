@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2452-svg-overflow"
+  baseUrl: localhost

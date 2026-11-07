@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2532-explorer-collapsed-theme"
+  baseUrl: localhost
+plugins:
+  core:
+    enabled: true
+    options:
+      theme: catppuccin

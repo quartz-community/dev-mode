@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2482-toc-fast-scroll"
+  baseUrl: localhost

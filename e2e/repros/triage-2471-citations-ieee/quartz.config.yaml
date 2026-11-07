@@ -1,0 +1,10 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2471-citations-ieee"
+  baseUrl: localhost
+plugins:
+  citations:
+    enabled: true
+    options:
+      bibliographyFile: ../../../e2e/repros/triage-2471-citations-ieee/content/refs.bib
+      csl: https://raw.githubusercontent.com/citation-style-language/styles/master/ieee.csl
