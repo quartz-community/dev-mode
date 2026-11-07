@@ -440,11 +440,8 @@
         "@quartz-community/citations#build",
         "@quartz-community/cname#build",
         "@quartz-community/comments#build",
-        "@quartz-community/content-index#build",
         "@quartz-community/content-meta#build",
         "@quartz-community/content-page#build",
-        "@quartz-community/crawl-links#build",
-        "@quartz-themes/core#build",
         "@quartz-community/created-modified-date#build",
         "@quartz-community/darkmode#build",
         "@quartz-community/description#build",
@@ -466,7 +463,6 @@
         "@quartz-community/quartz-fonts#build",
         "@quartz-community/reader-mode#build",
         "@quartz-community/recent-notes#build",
-        "@quartz-community/remove-draft#build",
         "@quartz-community/roam#build",
         "@quartz-community/search#build",
         "@quartz-community/spacer#build",
@@ -476,6 +472,7 @@
         "@quartz-community/tag-list#build",
         "@quartz-community/tag-page#build",
         "@quartz-community/unlisted-pages#build",
+        "@quartz-themes/core#build",
         "@quartz-community/types#build",
         "@quartz-community/utils#build"
       ],
@@ -510,6 +507,16 @@
       "dependsOn": [
         "@quartz-community/types#build",
         "@quartz-community/utils#build"
+      ],
+      "outputs": [
+        "dist/**",
+        "*.tsbuildinfo"
+      ],
+      "cache": false
+    },
+    "@quartz-community/remark-obsidian#build": {
+      "dependsOn": [
+        "@quartz-community/rehype-obsidian#build"
       ],
       "outputs": [
         "dist/**",

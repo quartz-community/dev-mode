@@ -86,47 +86,53 @@ async function main() {
 
   const clones: { name: string; status: "cloned" | "skipped" }[] = [];
 
-  const { failures } = await runWithConcurrency(repos, concurrency, async (repo) => {
-    const targetDir = join(REPOS_DIR, repo.name ?? repo.repo);
-    if (existsSync(targetDir)) {
-      logWarn("clone-skip", { repo: repo.repo, path: targetDir });
-      clones.push({ name: repo.name ?? repo.repo, status: "skipped" });
-      return;
-    }
-
-    const branch = repo.branch ?? getDefaultBranch(repo.repo);
-    // Core is cloned with full history and tags: `quartz info`, the build banner and changesets
-    // use `git describe --match v*` / the base branch, which a --depth=1 clone doesn't have.
-    const shallow = repo.repo !== manifest.core.repo;
-    const args = [
-      "clone",
-      ...(shallow ? ["--depth=1"] : []),
-      "--single-branch",
-      ...(branch ? ["--branch", branch] : []),
-      `https://github.com/${repo.repo}.git`,
-      targetDir,
-    ];
-
-    logInfo("clone-start", { repo: repo.repo, branch, path: targetDir });
-    try {
-      await runCommand("git", args, ROOT, dryRun);
-      logInfo("clone-done", { repo: repo.repo, path: targetDir });
-      clones.push({ name: repo.name ?? repo.repo, status: "cloned" });
-    } catch (error) {
+  const { failures } = await runWithConcurrency(
+    repos,
+    concurrency,
+    async (repo) => {
+      const targetDir = join(REPOS_DIR, repo.name ?? repo.repo);
       if (existsSync(targetDir)) {
-        rmSync(targetDir, { recursive: true, force: true });
-        logWarn("clone-cleanup", { repo: repo.repo, path: targetDir });
+        logWarn("clone-skip", { repo: repo.repo, path: targetDir });
+        clones.push({ name: repo.name ?? repo.repo, status: "skipped" });
+        return;
       }
-      throw error;
-    }
-  });
+
+      const branch = repo.branch ?? getDefaultBranch(repo.repo);
+      // Core is cloned with full history and tags: `quartz info`, the build banner and changesets
+      // use `git describe --match v*` / the base branch, which a --depth=1 clone doesn't have.
+      const shallow = repo.repo !== manifest.core.repo;
+      const args = [
+        "clone",
+        ...(shallow ? ["--depth=1"] : []),
+        "--single-branch",
+        ...(branch ? ["--branch", branch] : []),
+        `https://github.com/${repo.repo}.git`,
+        targetDir,
+      ];
+
+      logInfo("clone-start", { repo: repo.repo, branch, path: targetDir });
+      try {
+        await runCommand("git", args, ROOT, dryRun);
+        logInfo("clone-done", { repo: repo.repo, path: targetDir });
+        clones.push({ name: repo.name ?? repo.repo, status: "cloned" });
+      } catch (error) {
+        if (existsSync(targetDir)) {
+          rmSync(targetDir, { recursive: true, force: true });
+          logWarn("clone-cleanup", { repo: repo.repo, path: targetDir });
+        }
+        throw error;
+      }
+    },
+  );
   if (failures.length > 0) {
     for (const { item, error } of failures) {
       logError(`Clone failed: ${(item as { repo: string }).repo}`, {
         error: error.message,
       });
     }
-    throw new Error(`${failures.length} of ${repos.length} clone operations failed`);
+    throw new Error(
+      `${failures.length} of ${repos.length} clone operations failed`,
+    );
   }
 
   await import("./generate-turbo-graph");
@@ -145,6 +151,23 @@ async function main() {
       cwd: ROOT,
       timeout: TIMEOUTS.TURBO_BUILD,
     });
+
+    // Standalone repos aren't pnpm workspace members: install and build them on their own.
+    for (const plugin of manifest.plugins.filter((p) => p.standalone)) {
+      const dir = join(REPOS_DIR, plugin.name);
+      if (!selectedPlugins.has(plugin.name) || !existsSync(dir)) continue;
+      logInfo("standalone-install", { plugin: plugin.name, path: dir });
+      execSync("npm ci --ignore-scripts --no-audit --no-fund", {
+        stdio: "inherit",
+        cwd: dir,
+        timeout: TIMEOUTS.PNPM_INSTALL,
+      });
+      execSync("npm run build", {
+        stdio: "inherit",
+        cwd: dir,
+        timeout: TIMEOUTS.TURBO_BUILD,
+      });
+    }
   }
 
   logInfo("setup-summary", {

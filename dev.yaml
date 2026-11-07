@@ -73,6 +73,9 @@ plugins:
   - name: obsidian-plugin-excalidraw
   - name: obsidian-plugin-leaflet
   - name: obsidian-plugin-ttrpg-tools-maps
+  - name: tui
+    # runs under bun and its UI library needs Node 24+: own npm lockfile, not a pnpm workspace member
+    standalone: true
 
 presets:
   minimal:

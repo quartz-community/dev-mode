@@ -76,6 +76,10 @@ The workspace uses **pnpm** at the root. Plugin repositories inside `repos/` kee
 
 Quartz Syncer (`repos/syncer/`) also uses npm for its standalone workflow (esbuild bundling for Obsidian). In the workspace, pnpm manages its dependencies via workspace linking. The syncer has its own `AGENTS.md` with package-specific conventions.
 
+### Standalone repos
+
+A plugin marked `standalone: true` in `dev.yaml` (currently `tui`, which runs under bun and whose UI library needs Node 24+) is cloned into `repos/` but is **not** a pnpm workspace member: it is excluded in `pnpm-workspace.yaml` (`"!repos/<name>"`, checked by `just validate`), and `just setup` installs and builds it with its own lockfile (`npm ci && npm run build`). Rebuild it the same way after changes — `just build-plugin` and turbo don't see it.
+
 ## Workspace Linking
 
 `.pnpmfile.cjs` rewrites all `@quartz-community/*`, `@quartz-themes/*`, and `@jackyzha0/quartz` dependencies to `workspace:*` so pnpm resolves them from local clones in `repos/`. Never modify plugin `package.json` files to force local linking.

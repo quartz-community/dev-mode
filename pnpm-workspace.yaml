@@ -1,5 +1,7 @@
 packages:
   - "repos/*"
+  # standalone repos (dev.yaml `standalone: true`) install with their own lockfile, see scripts/setup.ts
+  - "!repos/tui"
 
 catalog:
   preact: "^10.28.2"
