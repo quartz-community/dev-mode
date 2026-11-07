@@ -35,6 +35,11 @@ configuration:
         tertiary: "#84a59d"
         highlight: "rgba(143, 159, 169, 0.15)"
         textHighlight: "#b3aa0288"
+  links:
+    markdownLinkResolution: shortest
+  contentIndex:
+    enableSiteMap: false
+    enableRSS: false
 plugins:
   - source: "@quartz-community/obsidian-flavored-markdown"
     enabled: true
@@ -45,22 +50,12 @@ plugins:
   - source: "@quartz-community/github-flavored-markdown"
     enabled: true
     order: 40
-  - source: "@quartz-community/crawl-links"
-    enabled: true
-    options:
-      markdownLinkResolution: shortest
-    order: 60
   - source: "@quartz-community/content-page"
     enabled: true
   - source: "@quartz-community/folder-page"
     enabled: true
   - source: "@quartz-community/alias-redirects"
     enabled: true
-  - source: "@quartz-community/content-index"
-    enabled: true
-    options:
-      enableSiteMap: false
-      enableRSS: false
   - source: "@quartz-community/quartz-fonts"
     enabled: true
   - source: "@quartz-community/explorer"

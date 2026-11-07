@@ -1,3 +1,5 @@
+# Deliberately keeps the pre-5.1 entries for crawl-links / content-index so the e2e suite
+# covers the automatic migration of plugins that are now built into core.
 configuration:
   pageTitle: Bug Repro Site
   enableSPA: true

@@ -25,6 +25,16 @@ content/*.md
 public/
 ```
 
+**Built-in processing** (`repos/quartz/quartz/plugins/builtins/`, configured under `configuration.*`):
+frontmatter (transformer, order 0 → `frontmatter`, `aliases`, `frontmatterLinks`), links (transformer,
+order 60 → relative hrefs, link classes, `links`), drafts (filter) and contentIndex (emitter →
+`static/contentIndex.json`, sitemap, RSS). They used to be the note-properties / crawl-links /
+remove-draft / content-index plugins; old config entries for those are absorbed automatically
+(`quartz plugin doctor --fix` rewrites them). A plugin that declares
+`quartz.capabilities.provides` for the same key replaces the built-in. Plugins add fields to
+contentIndex.json with an `extendContentIndex` hook on their instance. `quartz build --verbose`
+(→ `just site-build <target> --verbose`) prints which built-ins ran and why.
+
 Consequences worth remembering:
 
 - **All `markdownPlugins` run before any `htmlPlugins`**, regardless of plugin order. Order only
@@ -91,7 +101,7 @@ Config can be a full `quartz.config.yaml` or an **overlay**:
 ```yaml
 extends: default            # default | fixture:<name> | path/to/config.yaml
 configuration: { baseUrl: localhost/sub, enableSPA: false }   # deep-merged
-only: [obsidian-flavored-markdown, crawl-links, content-page] # enable only these
+only: [obsidian-flavored-markdown, content-page] # enable only these
 enable: [graph]
 disable: [explorer]
 plugins:

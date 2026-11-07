@@ -9,17 +9,21 @@
  *    errors, failed requests / HTTP >= 400, horizontal overflow at mobile width.
  * 3. SPA pass: from the index, follow --spa internal links by clicking and
  *    record errors that only appear after client-side navigation.
+ * 4. Content pass (needs the content dir): pages titled "Untitled" although the
+ *    note has a frontmatter title (frontmatter not parsed) and `draft: true`
+ *    notes that were published anyway — failures that render "fine".
  *
  * Exit code 1 if any problem is found. Useful as a regression check on a real
  * vault: put it in a dir with content/ (+ optional quartz.config.yaml overlay).
  */
 /// <reference lib="dom" />
 import { chromium, type Page } from "@playwright/test";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { pathToFileURL } from "node:url";
 import { parseArgs } from "./lib/args.js";
 import { chromiumLaunchOptions } from "./lib/browser.js";
-import { rel } from "./lib/sandbox.js";
+import { REPOS_DIR, rel } from "./lib/sandbox.js";
 import { routeProductionUrls } from "./lib/page-routing.js";
 import { formatStaleDists, prepareSite } from "./lib/site-target.js";
 import { resolveSiteFile, startStaticServer } from "./lib/static-server.js";
@@ -33,7 +37,9 @@ export interface Problem {
     | "http-error"
     | "request-failed"
     | "mobile-overflow"
-    | "spa-error";
+    | "spa-error"
+    | "untitled-page"
+    | "draft-published";
   page: string;
   detail: string;
 }
@@ -174,6 +180,81 @@ function attachCollectors(
   });
 }
 
+function walkMarkdown(dir: string, root = dir, out: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) continue;
+    const full = join(dir, entry.name);
+    if (entry.isDirectory()) walkMarkdown(full, root, out);
+    else if (entry.name.endsWith(".md")) out.push(relative(root, full));
+  }
+  return out.sort();
+}
+
+/** Minimal YAML frontmatter reader: top-level `key: value` scalars only. */
+export function frontmatterScalars(markdown: string): Record<string, string> {
+  const match = markdown.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  const out: Record<string, string> = {};
+  if (!match) return out;
+  for (const line of match[1].split(/\r?\n/)) {
+    const kv = line.match(/^([A-Za-z_][\w-]*):\s*(.*?)\s*$/);
+    if (kv) out[kv[1]] = kv[2].replace(/^(["'])(.*)\1$/, "$2");
+  }
+  return out;
+}
+
+function htmlTitle(html: string): string | undefined {
+  return html.match(/<title>([^<]*)<\/title>/)?.[1];
+}
+
+/** Notes whose frontmatter did not take effect: "Untitled" pages and published drafts. */
+export async function contentPass(
+  siteDir: string,
+  contentDir: string,
+): Promise<Problem[]> {
+  const problems: Problem[] = [];
+  const utilsEntry = join(REPOS_DIR, "utils/dist/index.js");
+  if (!existsSync(utilsEntry)) return problems;
+  const { slugifyFilePath } = (await import(
+    pathToFileURL(utilsEntry).href
+  )) as {
+    slugifyFilePath: (fp: string) => string;
+  };
+  for (const file of walkMarkdown(contentDir)) {
+    const fm = frontmatterScalars(
+      readFileSync(join(contentDir, file), "utf-8"),
+    );
+    const slug = slugifyFilePath(file);
+    const page =
+      slug === "index"
+        ? ""
+        : slug.endsWith("/index")
+          ? slug.slice(0, -5)
+          : slug;
+    const htmlFile = resolveSiteFile(siteDir, page);
+    const isDraft = fm.draft === "true";
+    if (isDraft) {
+      if (htmlFile) {
+        problems.push({
+          kind: "draft-published",
+          page: page || "/",
+          detail: `${file} has draft: true but was published`,
+        });
+      }
+      continue;
+    }
+    if (!htmlFile || !fm.title || fm.title === "Untitled") continue;
+    const title = htmlTitle(readFileSync(htmlFile, "utf-8")) ?? "";
+    if (/^Untitled\b/.test(title)) {
+      problems.push({
+        kind: "untitled-page",
+        page: page || "/",
+        detail: `<title>${title}</title> but ${file} has title: ${fm.title} (frontmatter not parsed?)`,
+      });
+    }
+  }
+  return problems;
+}
+
 async function main() {
   const { flags, positional } = parseArgs(process.argv.slice(2));
   const spec = positional[0];
@@ -198,6 +279,11 @@ async function main() {
     prepared.basePath,
     files,
   );
+  if (prepared.target.contentDir) {
+    problems.push(
+      ...(await contentPass(prepared.siteDir, prepared.target.contentDir)),
+    );
+  }
   let visited = 0;
 
   if (!flags["no-browser"]) {

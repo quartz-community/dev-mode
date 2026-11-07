@@ -675,6 +675,8 @@ export async function buildSite(
             contentDir,
             "-o",
             "public",
+            // Quartz's own --verbose: plugin order, built-ins, layout report, per-file output
+            ...(options.verbose ? ["--verbose"] : []),
           ],
           sandboxDir,
           timeoutMs,

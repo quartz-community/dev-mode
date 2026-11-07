@@ -35,6 +35,8 @@ configuration:
         tertiary: "#84a59d"
         highlight: "rgba(143, 159, 169, 0.15)"
         textHighlight: "#b3aa0288"
+  links:
+    markdownLinkResolution: shortest
 plugins:
   - source: "@quartz-community/obsidian-flavored-markdown"
     enabled: true
@@ -45,11 +47,6 @@ plugins:
   - source: "@quartz-community/github-flavored-markdown"
     enabled: true
     order: 40
-  - source: "@quartz-community/crawl-links"
-    enabled: true
-    options:
-      markdownLinkResolution: shortest
-    order: 60
   - source: "@quartz-community/content-page"
     enabled: true
   - source: "@quartz-community/quartz-fonts"

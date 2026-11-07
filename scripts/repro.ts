@@ -67,7 +67,7 @@ export function renderOverlay(options: {
     `  pageTitle: "Repro: ${options.slug}"`,
     "  # Serve at the site root. Use e.g. localhost/sub to reproduce base-path bugs.",
     "  baseUrl: localhost",
-    "# only: [obsidian-flavored-markdown, crawl-links, content-page]   # enable ONLY these",
+    "# only: [obsidian-flavored-markdown, content-page]   # enable ONLY these",
     "# enable: [graph]",
     "# disable: [explorer]",
   ];

@@ -3,7 +3,11 @@ import {
   baseUrlHost,
   productionUrlToSitePath,
 } from "../scripts/lib/page-routing.js";
-import { internalTargets, pagePathFor } from "../scripts/smoke.js";
+import {
+  frontmatterScalars,
+  internalTargets,
+  pagePathFor,
+} from "../scripts/smoke.js";
 
 describe("pagePathFor", () => {
   it("maps html files to site paths", () => {
@@ -78,5 +82,18 @@ describe("relevantChanges", () => {
       " M .turbo/log",
     ].join("\n");
     expect(relevantChanges(porcelain)).toEqual(["src/a.ts", "new.ts"]);
+  });
+});
+
+describe("frontmatterScalars (smoke content pass)", () => {
+  it("reads top-level scalars and strips quotes", () => {
+    expect(
+      frontmatterScalars(
+        '---\ntitle: "My: Note"\ndraft: true\ntags:\n  - a\n---\nbody',
+      ),
+    ).toEqual({ title: "My: Note", draft: "true", tags: "" });
+  });
+  it("returns {} without frontmatter", () => {
+    expect(frontmatterScalars("# no frontmatter")).toEqual({});
   });
 });

@@ -51,7 +51,7 @@ test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
       .click();
     await page.waitForURL("**/test-base/features/callouts");
 
-    await expect(page.locator("h1")).toContainText("Callouts");
+    await expect(page.locator("h1.article-title")).toContainText("Callouts");
     expect(responses404).toEqual([]);
   });
 
@@ -97,7 +97,7 @@ test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
     page,
   }) => {
     await page.goto("/test-base/features/callouts");
-    const fullLoadTitle = await page.locator("h1").textContent();
+    const fullLoadTitle = await page.locator("h1.article-title").textContent();
     const fullLoadArticle = await page.locator("article").textContent();
 
     await page.goto("/test-base/");
@@ -107,7 +107,7 @@ test.describe("Base URL / SPA Navigation (#2420, #2462)", () => {
       .first()
       .click();
     await page.waitForURL("**/test-base/features/callouts");
-    const spaTitle = await page.locator("h1").textContent();
+    const spaTitle = await page.locator("h1.article-title").textContent();
     const spaArticle = await page.locator("article").textContent();
 
     expect(spaTitle).toBe(fullLoadTitle);

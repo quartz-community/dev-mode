@@ -1,0 +1,7 @@
+# The site is built WITHOUT note-properties, crawl-links, remove-draft and content-index:
+# frontmatter, links, drafts and the content index are built into core now.
+extends: default
+configuration:
+  pageTitle: "Repro: core-builtins-without-plugins"
+  baseUrl: localhost
+only: [content-page, obsidian-flavored-markdown, backlinks]
