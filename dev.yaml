@@ -128,7 +128,7 @@ presets:
 tools:
   - name: syncer
     repo: saberzero1/quartz-syncer
-    branch: quartz-npm-plugins-rework
+    branch: main
 
 workspace:
   singletons:
