@@ -8,5 +8,5 @@
     "skipLibCheck": true,
     "outDir": ".output/tsc"
   },
-  "include": ["helpers/**/*.ts", "tests/**/*.ts", "playwright.config.ts"]
+  "include": ["helpers/**/*.ts", "tests/**/*.ts", "repros/**/*.ts", "playwright*.config.ts"]
 }

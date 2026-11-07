@@ -33,3 +33,8 @@ e2e/test-results/
 
 # Internal
 .sisyphus/
+
+# Dev-mode scratch output (sandboxes, built sites, catalog, visual captures, traces, logs)
+.dev/
+e2e/repros/*/.output/
+test-results/

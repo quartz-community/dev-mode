@@ -33,7 +33,7 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "check": "turbo run typecheck lint format:check test",
-    "e2e:build": "tsx e2e/helpers/build-fixture.ts base-url-site",
+    "e2e:build": "tsx e2e/helpers/build-fixture.ts all",
     "e2e:test": "playwright test --config e2e/playwright.config.ts",
     "e2e": "pnpm e2e:build && pnpm e2e:test",
     "test:unit": "vitest run"
