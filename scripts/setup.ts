@@ -95,9 +95,12 @@ async function main() {
     }
 
     const branch = repo.branch ?? getDefaultBranch(repo.repo);
+    // Core is cloned with full history and tags: `quartz info`, the build banner and changesets
+    // use `git describe --match v*` / the base branch, which a --depth=1 clone doesn't have.
+    const shallow = repo.repo !== manifest.core.repo;
     const args = [
       "clone",
-      "--depth=1",
+      ...(shallow ? ["--depth=1"] : []),
       "--single-branch",
       ...(branch ? ["--branch", branch] : []),
       `https://github.com/${repo.repo}.git`,

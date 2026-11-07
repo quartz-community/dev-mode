@@ -67,7 +67,9 @@ just commit-files <repo> "fix(x): ..." src/a.ts test/a.test.ts   # preferred: on
 just commit <repo> "fix(x): ..."              # stages everything except dist/
 ```
 Repos may have unrelated pre-existing changes (e.g. `.gitignore`) — use `commit-files` to avoid sweeping them in.
-Releasing is separate: see the `release-plugins` skill. Pushing (`just push`, `just push-repo`) is outward-facing —
+Add a changeset for user-facing changes: `just release-changeset --bump <type> --summary "<text>" <pkg…>`
+— this includes Quartz core (`quartz`); never `npx changeset` inside `repos/quartz` (it finds the
+workspace root). Releasing is separate: see the `release-plugins` skill. Pushing (`just push`, `just push-repo`) is outward-facing —
 ask the user first.
 
 ## Cross-repo changes

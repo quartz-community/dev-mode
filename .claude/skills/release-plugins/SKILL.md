@@ -56,9 +56,13 @@ and (with approval) `just push-repo quartz`.
   `.changeset/*.md` in `repos/quartz` for user-facing changes (`"@jackyzha0/quartz": minor`); on `v5` CI
   opens a "chore: release Quartz" PR, and merging it tags `vX.Y.Z` + creates a GitHub release
   (`.github/workflows/release.yaml`). Its lockfile is still updated after plugin releases. Note: inside
-  this workspace `npx changeset` finds the pnpm root instead of repos/quartz — write the file by hand
-  or use `just release-changeset quartz …`.
+  this workspace `npx changeset` finds the pnpm root instead of repos/quartz — never run it there; use
+  `just release-changeset --bump minor --summary "…" quartz` (`--dry-run` to preview) or write the file
+  by hand. Release tags start at `v5.0.0`; if `git -C repos/quartz describe --match 'v*'` fails, the
+  clone is shallow: `git -C repos/quartz fetch --unshallow --tags`.
 - Plugins that need a newer Quartz must raise `quartz.quartzVersion` (semver range, e.g. `">=5.1.0"`);
-  Quartz enforces it at build / `plugin add` / `plugin doctor`. Release that as a plugin minor/major.
+  Quartz enforces it at build (warning locally, failure in CI) / `plugin add` / `plugin doctor`. Only
+  raise it once that core version is released (until then core's package.json still says the old
+  version); release the change as a plugin minor/major.
 - Syncer (`repos/syncer`) releases via GitHub releases (`version-bump.mjs` + tag), not npm — see `repos/syncer/AGENTS.md`.
 - Legacy bulk tagging recipes (`just publish-tags`, `publish-tag`) push tags directly — avoid unless the user asks.

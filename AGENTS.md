@@ -280,6 +280,15 @@ Plugins use **changesets** for versioning and publishing:
 4. Merge that PR → CI publishes to npm
 5. After npm publish, update the Quartz lockfile: `just update-quartz-lockfile && just push`
 
+### Quartz core versioning
+
+Quartz core (`@jackyzha0/quartz`, `repos/quartz`) is not published to npm, but is versioned with changesets too (tags `vX.Y.Z`, starting from `v5.0.0`):
+
+- Every user-facing core change gets a changeset (`"@jackyzha0/quartz": patch|minor|major`). On `v5`, `.github/workflows/release.yaml` keeps a "chore: release Quartz" PR open; merging it tags `vX.Y.Z` and creates the GitHub release.
+- **Do not run `npx changeset` inside this workspace** — in `repos/quartz` it finds the dev-mode pnpm root, not Quartz. Use `just release-changeset --bump <patch|minor|major> --summary "<text>" quartz` (`--dry-run` to preview), or write `repos/quartz/.changeset/<slug>.md` by hand. `npx changeset status` is likewise wrong here; `just release-status` covers core.
+- `repos/quartz` must have full history and tags (`git describe --match v*` feeds `quartz info` and the build banner). `just setup` clones core unshallowed; for an older shallow clone run `git -C repos/quartz fetch --unshallow --tags`.
+- A plugin that needs a newer core declares it in `package.json` → `quartz.quartzVersion` (e.g. `">=5.1.0"`) **after that core version is released**. Quartz warns on local builds and fails builds in CI on a mismatch; dev-mode sandboxes set `QUARTZ_ALLOW_INCOMPATIBLE_PLUGINS=1` outside CI so unreleased requirements only warn.
+
 ## Pitfalls
 
 - **Turbo caching and `--affected` cannot see plugin sources**: turbo hashes inputs through the *root* git repo, where `repos/` is ignored, so every package hashes to "no inputs". With caching on, edited plugins got their old `dist/` replayed and tests replayed cached passes; `--affected` never selected anything (also in CI). `turbo.json` therefore sets `cache: false` (enforced by `scripts/generate-turbo-graph.ts`; a full build is ~25 s), and `just build-affected` / `typecheck-affected` / `test-affected` use `scripts/changed.ts` (per-repo git status + unpushed commits → `--filter=...<pkg>`). `just changed` lists what it detects.

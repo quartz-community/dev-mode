@@ -475,7 +475,11 @@ function runProcess(
         ...process.env,
         FORCE_COLOR: "0",
         NO_COLOR: "1",
+        // CI=1 only turns off Quartz's spinner. Quartz also fails builds in CI when a plugin's
+        // quartzVersion excludes this Quartz; locally that stays a warning (plugins in the
+        // workspace may already require an unreleased core version), in real CI it fails.
         CI: process.env.CI ?? "1",
+        ...(process.env.CI ? {} : { QUARTZ_ALLOW_INCOMPATIBLE_PLUGINS: "1" }),
       },
     });
     let output = "";
