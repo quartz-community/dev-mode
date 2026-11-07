@@ -18,7 +18,15 @@ function readPackageJson(dir: string): PackageJson | null {
   return safeReadJson<PackageJson>(pkgPath);
 }
 
-export function generate(): void {
+const CACHE_DISABLED_TASKS = [
+  "build",
+  "typecheck",
+  "test",
+  "lint",
+  "format:check",
+];
+
+function generate(): void {
   if (!existsSync(REPOS_DIR)) {
     console.log("No repos/ directory — skipping turbo graph generation");
     return;
@@ -57,9 +65,10 @@ export function generate(): void {
     }
   }
 
-  const turboJson = safeReadJson<
-    { tasks: Record<string, unknown>; [key: string]: unknown }
-  >(TURBO_JSON);
+  const turboJson = safeReadJson<{
+    tasks: Record<string, unknown>;
+    [key: string]: unknown;
+  }>(TURBO_JSON);
 
   for (const key of Object.keys(turboJson.tasks)) {
     if (key.includes("#")) {
@@ -67,9 +76,25 @@ export function generate(): void {
     }
   }
 
+  // Turbo hashes task inputs through git, and repos/ is git-ignored by the
+  // root repo (each repos/<name> is its own git repo). Turbo therefore sees
+  // ZERO input files for every package: cache keys never change, so edited
+  // plugins get their old dist/ replayed from cache and tests replay cached
+  // passes. Until hashing works for nested repos, caching must stay off.
+  // (A full uncached workspace build takes ~25 s.) `--affected` is blind for
+  // the same reason — use `just build-changed` instead.
+  for (const task of CACHE_DISABLED_TASKS) {
+    const existing = turboJson.tasks[task];
+    if (existing && typeof existing === "object") {
+      (existing as Record<string, unknown>).cache = false;
+    }
+  }
+
   for (const [pkgName, deps] of packageDeps) {
     turboJson.tasks[`${pkgName}#build`] = {
       dependsOn: deps.map((d) => `${d}#build`),
+      outputs: ["dist/**", "*.tsbuildinfo"],
+      cache: false,
     };
   }
 

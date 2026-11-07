@@ -34,19 +34,19 @@ jobs:
       - name: Setup workspace
         run: pnpm run dev-setup --preset full
 
-      - name: Build affected
-        run: pnpm turbo run build --affected
+      - name: Build
+        run: pnpm turbo run build
 
-      - name: Type-check affected
-        run: pnpm turbo run typecheck --affected
+      - name: Type-check
+        run: pnpm turbo run typecheck
 
-      - name: Test affected
+      - name: Test
         id: test
         continue-on-error: true
-        run: pnpm turbo run test --affected --filter='!@quartz-themes/core'
+        run: pnpm turbo run test --filter='!@quartz-themes/core'
 
-      - name: Lint affected
-        run: pnpm turbo run lint --affected
+      - name: Lint
+        run: pnpm turbo run lint
 
       - name: Validate workspace
         run: pnpm validate
@@ -55,19 +55,20 @@ jobs:
         run: pnpm exec playwright install chromium --with-deps
 
       - name: Build E2E fixtures
-        run: |
-          pnpm tsx e2e/helpers/build-fixture.ts base-url-site
-          pnpm tsx e2e/helpers/build-fixture.ts nested-base-url
-          pnpm tsx e2e/helpers/build-fixture.ts bug-repro
-          pnpm tsx e2e/helpers/build-fixture.ts footer-disabled
+        run: pnpm tsx e2e/helpers/build-fixture.ts all
 
       - name: Run E2E tests
         run: pnpm exec playwright test --config e2e/playwright.config.ts
         env:
           CI: "true"
 
+      - name: Run repros
+        run: pnpm exec playwright test --config e2e/playwright.repros.config.ts
+        env:
+          CI: "true"
+
       - name: Check test results
         if: steps.test.outcome == 'failure'
         run: |
-          echo "::error::Test step failed — see 'Test affected' step above for details"
+          echo "::error::Test step failed — see 'Test' step above for details"
           exit 1
