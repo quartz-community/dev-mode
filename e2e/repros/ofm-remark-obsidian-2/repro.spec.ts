@@ -1,3 +1,3 @@
 import { obsidianSyntaxCases } from "./cases";
 
-obsidianSyntaxCases("legacy");
+obsidianSyntaxCases("legacy", "ofm-remark-obsidian-2");

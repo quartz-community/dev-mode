@@ -14,8 +14,8 @@ ending into a `<br>` (`positionedBreaks`) and keeps comments as nodes; `bareFoot
 rehype-obsidian ≥ 1.1.
 
 ## Expected (asserted by repro.spec.ts)
-Callouts with Quartz's markup (title, nesting, fold, metadata), soft line endings as spaces
-(HardLineBreaks is disabled), comments hidden, an undefined footnote reference shown as its bare
+Callouts with Quartz's markup (title, nesting, fold, metadata), soft line endings as `<br>`
+(legacy; a space under `strict`), comments hidden, an undefined footnote reference shown as its bare
 label, inline footnotes, highlights, tags, wikilinks, tables, math, frontmatter, and callout
 syntax inside code left as code.
 

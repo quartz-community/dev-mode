@@ -3,8 +3,13 @@ import { test, expect } from "../../helpers/repro-fixture";
 // See README.md. OFM with remark-obsidian 2.x and rehype-obsidian 1.2. Shared with
 // ../ofm-remark-obsidian-2-strict, which builds the same content with `preset: strict`.
 
-export function obsidianSyntaxCases(preset: string) {
+export function obsidianSyntaxCases(
+  preset: "legacy" | "strict",
+  reproSlug: string,
+) {
   test.describe(`Obsidian syntax with remark-obsidian 2.x (${preset})`, () => {
+    test.use({ reproSlug });
+
     test.beforeEach(async ({ page, site }) => {
       await page.goto(site.url("/"));
     });
@@ -51,11 +56,11 @@ export function obsidianSyntaxCases(preset: string) {
       );
     });
 
-    test("a soft line ending is a space (HardLineBreaks disabled)", async ({
+    test("a soft line ending follows the preset (legacy: <br>, strict: space)", async ({
       page,
     }) => {
       const p = page.locator("article p").filter({ hasText: "First line" });
-      await expect(p.locator("br")).toHaveCount(0);
+      await expect(p.locator("br")).toHaveCount(preset === "legacy" ? 1 : 0);
     });
 
     test("comments are hidden, with no stray elements", async ({ page }) => {
@@ -72,8 +77,13 @@ export function obsidianSyntaxCases(preset: string) {
       const p = page
         .locator("article p")
         .filter({ hasText: "A reference to nothing" });
-      await expect(p).toContainText("nothingmissing");
-      await expect(p).not.toContainText("[^missing]");
+      // legacy: Obsidian shows an undefined reference as its bare label; strict keeps it literal (GFM)
+      if (preset === "legacy") {
+        await expect(p).toContainText("nothingmissing");
+        await expect(p).not.toContainText("[^missing]");
+      } else {
+        await expect(p).toContainText("nothing[^missing]");
+      }
       await expect(
         page.locator("article section[data-footnotes]"),
       ).toContainText("inline note");

@@ -106,19 +106,26 @@ const UNFIXED = new Set(["open", "reproduced"]);
 
 export const test = base.extend<
   {
+    /**
+     * Which repro to build. Defaults to the folder of the file that defines the test; set it
+     * with `test.use({ reproSlug })` when tests are shared between repros (a shared cases file
+     * lives in one repro's folder but runs for several).
+     */
+    reproSlug: string | undefined;
     site: ReproSite;
     pageProblems: PageProblems;
     _expectFailWhileUnfixed: void;
   },
   { _closeServers: void }
 >({
+  reproSlug: [undefined, { option: true }],
   // Unfixed repros (README status open|reproduced) are expected to fail so the
   // suite stays green; Playwright reports "expected to fail, but passed" once a
   // fix lands — then set status: fixed. REPRO_STRICT=1 (used by `repro check`)
   // disables this to see the raw result.
   _expectFailWhileUnfixed: [
-    async ({}, use, testInfo) => {
-      const slug = slugFromTestFile(testInfo.file);
+    async ({ reproSlug }, use, testInfo) => {
+      const slug = reproSlug ?? slugFromTestFile(testInfo.file);
       const status = reproStatus(slug);
       // Tests titled "control: …" are sanity checks that must pass regardless.
       const isControl = /^control\b/i.test(testInfo.title);
@@ -145,8 +152,8 @@ export const test = base.extend<
     },
     { scope: "worker", auto: true },
   ],
-  site: async ({}, use, testInfo) => {
-    const slug = slugFromTestFile(testInfo.file);
+  site: async ({ reproSlug }, use, testInfo) => {
+    const slug = reproSlug ?? slugFromTestFile(testInfo.file);
     if (!servers.has(slug)) {
       servers.set(
         slug,
