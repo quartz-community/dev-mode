@@ -11,7 +11,7 @@ overview *args:
 
 # --- Setup & Teardown ---
 
-# Verify development prerequisites (Node 22+, pnpm 10+, git)
+# Verify development prerequisites (Node per .node-version, pnpm 10+, git)
 check-env:
     @pnpm tsx scripts/check-env.ts
 

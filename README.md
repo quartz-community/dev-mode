@@ -22,7 +22,7 @@ just setup            # clones all repos, installs, builds
 With Nix:
 
 ```bash
-nix develop           # drops into shell with Node 22, pnpm, just, libvips
+nix develop           # drops into shell with Node (pinned in .node-version), pnpm, just, libvips
 just setup
 ```
 

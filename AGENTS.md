@@ -124,7 +124,7 @@ All workspace commands are available via `just`. Run `just` to list them.
 ### Setup & Environment
 
 ```bash
-just check-env              # verify Node 22+, pnpm 10+, git
+just check-env              # verify Node (pinned in .node-version), pnpm 10+, git
 just setup                  # clone all repos, install, build (runs check-env first)
 just setup minimal          # clone with minimal preset
 just add-plugin <name>      # add a single plugin
