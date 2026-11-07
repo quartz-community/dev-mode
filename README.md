@@ -131,7 +131,23 @@ Plugins use changesets for versioning:
 
 ## For Agent Tools
 
-See `CLAUDE.md` for workspace rules, constraints, and task flows.
+See `AGENTS.md` (loaded via `CLAUDE.md`) for workspace rules and the agent toolkit, `docs/ARCHITECTURE.md`
+for how Quartz's pipeline fits together, and `.claude/skills/` for step-by-step workflows
+(plugin changes, bug repros, E2E tests, CSS changes, data flow, releases). `just overview` is the
+one-screen starting point.
+
+## Sandboxed sites, repros and inspection
+
+```bash
+just site-build fixture:bug-repro      # isolated build (never touches repos/quartz) → .dev/sites/
+just site-smoke fixture:bug-repro      # broken links, console/page/SPA errors, mobile overflow
+just repro-new 1234-short-name --issue jackyzha0/quartz#1234   # self-contained bug repro
+just repro-check 1234-short-name --expect-fail                 # confirm it reproduces
+just inspect fixture:bug-repro docs/ --screenshot              # look at a page
+just visual-baseline && just visual-check                      # before/after CSS regression report
+just catalog show graph                                        # what a plugin does / reads / writes
+just release-status                                            # what needs releasing
+```
 
 ## License
 

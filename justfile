@@ -4,6 +4,10 @@ set dotenv-load := false
 default:
     @just --list
 
+# One-screen orientation: toolchain, browser, dirty repos, stale dist/, generated artifacts
+overview *args:
+    @pnpm tsx scripts/overview.ts {{args}}
+
 # --- Setup & Teardown ---
 
 # Verify development prerequisites (Node 22+, pnpm 10+, git)
@@ -50,17 +54,25 @@ doctor:
 build:
     pnpm turbo run build
 
-# Build only packages affected by recent changes
+# List packages with local changes (uncommitted source edits or unpushed commits)
+changed *args:
+    @pnpm tsx scripts/changed.ts {{args}}
+
+# Build packages with local changes + their dependents (turbo --affected is blind here: repos/ is git-ignored at the root)
 build-affected:
-    pnpm turbo run build --affected
+    pnpm tsx scripts/changed.ts run build
+
+# Test packages with local changes + their dependents
+test-affected:
+    pnpm tsx scripts/changed.ts run test
 
 # Type-check all packages
 typecheck:
     pnpm turbo run typecheck
 
-# Type-check only affected packages
+# Type-check packages with local changes + their dependents
 typecheck-affected:
-    pnpm turbo run typecheck --affected
+    pnpm tsx scripts/changed.ts run typecheck
 
 # Run unit tests for workspace scripts
 test-unit:
@@ -280,6 +292,24 @@ deploy-changesets:
 deploy-changesets-dry:
     pnpm tsx scripts/deploy-changesets.ts --dry-run
 
+# --- Releases (local prep only; pushing/merging/publishing stays manual) ---
+
+# What needs releasing across the ecosystem (versions vs npm, changesets, unpushed, lockfile)
+release-status *args:
+    pnpm tsx scripts/release.ts status {{args}}
+
+# Ordered release plan for a set of packages, incl. dependents that must follow (--bump patch|minor|major)
+release-plan +args:
+    pnpm tsx scripts/release.ts plan {{args}}
+
+# Write the same changeset into several repos: --bump patch --summary "..." <pkg...>
+release-changeset +args:
+    pnpm tsx scripts/release.ts changeset {{args}}
+
+# Pre-flight a release set: build/typecheck/lint/format/test for packages + dependents
+release-verify +args:
+    pnpm tsx scripts/release.ts verify {{args}}
+
 # Tag all repos with their current version to trigger CI publish (infrastructure first, then plugins)
 publish-tags:
     #!/usr/bin/env bash
@@ -392,6 +422,10 @@ update-quartz-lockfile:
     git -C repos/quartz commit -m "chore: update lockfile for latest plugin releases"
     echo "Committed. Run 'just push' to push."
 
+# Remove all generated dev-mode scratch output (.dev/: sandboxes, sites, catalog, visual, traces, logs)
+clean-dev:
+    rm -rf .dev
+
 # Clean turbo cache
 clean-cache:
     rm -rf .turbo repos/*/.turbo
@@ -402,18 +436,96 @@ graph:
 
 # --- E2E Tests ---
 
-# Build E2E test fixtures
-e2e-build fixture="base-url-site":
-    pnpm tsx e2e/helpers/build-fixture.ts {{fixture}}
+# Build E2E fixtures in isolated sandboxes (default: all, in parallel)
+e2e-build +fixtures="all":
+    pnpm tsx e2e/helpers/build-fixture.ts {{fixtures}}
 
-# Run E2E tests (requires fixtures to be built first)
-e2e-test:
-    pnpm exec playwright test --config e2e/playwright.config.ts
+# Run E2E tests (requires fixtures to be built first); extra args go to playwright
+e2e-test *args:
+    pnpm exec playwright test --config e2e/playwright.config.ts {{args}}
 
-# Full E2E: build fixtures + run tests
-e2e fixture="base-url-site": (e2e-build fixture)
+# Full E2E: build all fixtures + run tests + run repros
+e2e: (e2e-build "all")
     @just e2e-test
+    @just repro-test
 
 # Install Playwright browser binaries (not needed if using Nix)
 install-browsers:
     pnpm exec playwright install chromium
+
+# Show which Chromium binary E2E tooling will use (and why)
+which-browser:
+    @pnpm tsx -e "import('./scripts/lib/browser.ts').then(m => console.log(JSON.stringify(m.resolveChromium(), null, 2)))"
+
+# --- Sites (isolated sandboxes; never touch repos/quartz) ---
+# <target>: fixture:<name> | repro:<slug> | docs | <dir>   (just site-targets)
+
+# List buildable site targets (fixtures and repros)
+site-targets:
+    pnpm tsx scripts/site.ts targets
+
+# Build a site target into .dev/sites/<id> (warns about stale plugin dist/)
+site-build target *args:
+    pnpm tsx scripts/site.ts build {{target}} {{args}}
+
+# Build and serve a site target statically (production-like, honours base path)
+site-serve target *args:
+    pnpm tsx scripts/site.ts serve {{target}} {{args}}
+
+# Quartz live-reload server for a site target, in a sandbox
+site-dev target *args:
+    pnpm tsx scripts/site.ts dev {{target}} {{args}}
+
+# Whole-site smoke test: broken links/assets, console + page errors, SPA errors, mobile overflow
+site-smoke target *args:
+    pnpm tsx scripts/smoke.ts {{target}} {{args}}
+
+# Print the fully resolved quartz.config.yaml for a target (after overlays)
+site-config target *args:
+    pnpm tsx scripts/site.ts config {{target}} {{args}}
+
+# Plugin catalog: build | show <pkg> | who-writes <key> | who-reads <key> | impact <pkg> | dom <class> | search <text>
+catalog *args:
+    pnpm tsx scripts/catalog.ts {{args}}
+
+# Runtime data-flow trace of a real build: who reads/writes which file.data key (prototype)
+trace site="fixture:bug-repro" *args:
+    pnpm tsx scripts/trace.ts --site {{site}} {{args}}
+
+# Inspect rendered page(s): errors, layout map, computed styles, screenshot (--screenshot, --selector, --viewport mobile, --theme dark)
+inspect *args:
+    pnpm tsx scripts/inspect.ts {{args}}
+
+# Visual regression: capture <label> | compare <a> <b> | baseline | check
+visual *args:
+    pnpm tsx scripts/visual.ts {{args}}
+
+# Capture the "base" visual snapshot (screenshots + computed styles) before a CSS/UI change
+visual-baseline *args:
+    pnpm tsx scripts/visual.ts baseline {{args}}
+
+# Capture "head" and compare against "base": pixel diff + text style diff report (exit 1 on change)
+visual-check *args:
+    pnpm tsx scripts/visual.ts check {{args}}
+
+# --- Repros (e2e/repros/<slug>: content + config overlay + Playwright spec) ---
+
+# Scaffold a new repro (e.g. just repro-new 2490-mermaid-spa --issue jackyzha0/quartz#2490 --plugin graph)
+repro-new slug *args:
+    pnpm tsx scripts/repro.ts new {{slug}} {{args}}
+
+# List repros with status
+repro-list:
+    pnpm tsx scripts/repro.ts list
+
+# Build a repro site
+repro-build slug *args:
+    pnpm tsx scripts/repro.ts build {{slug}} {{args}}
+
+# Run repro specs (all, or one slug)
+repro-test slug="" *args:
+    pnpm tsx scripts/repro.ts test {{slug}} {{args}}
+
+# Build + test one repro; add --expect-fail to confirm it reproduces the bug
+repro-check slug *args:
+    pnpm tsx scripts/repro.ts check {{slug}} {{args}}
