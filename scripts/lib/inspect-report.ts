@@ -103,7 +103,7 @@ export function formatPage(r: PageInspection): string[] {
       for (const c of slot.children) {
         const name = `${c.tag}${c.id ? `#${c.id}` : ""}${c.classes ? `.${c.classes}` : ""}`;
         out.push(
-          `    ${c.visible ? "✓" : "✗"} ${name.padEnd(40)} ${box(c.box)}${c.visible ? "" : `  (${c.reason})`}`,
+          `    ${c.visible ? "✓" : "✗"} ${name.padEnd(40)} ${box(c.box)}${c.source ? `  ← ${c.source}` : ""}${c.visible ? "" : `  (${c.reason})`}`,
         );
       }
     }

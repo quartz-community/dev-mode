@@ -1,0 +1,14 @@
+# Flex groups in the header slot (KNOWN_LIMITATIONS.md used to say header/footer
+# could not use `group`). Search + darkmode share one header row.
+extends: default
+configuration:
+  pageTitle: "Repro: core-layout-header-group"
+  baseUrl: localhost
+plugins:
+  search:
+    layout: { position: header, priority: 10, group: header-tools }
+  darkmode:
+    layout: { position: header, priority: 20, group: header-tools }
+layout:
+  groups:
+    header-tools: { direction: row, gap: 2rem }

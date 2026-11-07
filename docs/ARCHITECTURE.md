@@ -57,8 +57,10 @@ One package may be several categories (array). Types: `repos/quartz/quartz/plugi
   In the DOM: `.page-header`, `.center`, `article`, `.left.sidebar`, `.right.sidebar`, `footer`.
 - Frames (`components/frames/`: default, full-width, minimal) arrange the slots; page types and
   `layout.byPageType` select them. Known limits: `KNOWN_LIMITATIONS.md`.
-- Rendered HTML has no per-plugin markers. Map DOM → plugin with `just catalog dom <class>`, or look at
-  a live page with `just inspect <target> <page>` (layout map, computed styles, screenshot).
+- Plugin component roots carry `data-quartz-plugin="<plugin>"` and `data-quartz-component="<Export>"`
+  (core `quartz/components/attribution.ts`, applied in the component loader; only when the component
+  returns a single HTML element). `just inspect <target> <page>` shows them in its layout map
+  (`← graph/Graph`). For classes deeper inside a component, or CSS/scripts, use `just catalog dom <class>`.
 
 ## 4. Browser side
 

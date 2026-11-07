@@ -19,8 +19,9 @@ Two tools (both take a site target: `fixture:<name>`, `repro:<slug>`, `docs`, or
 
 ## Workflow
 
-1. **Find the source.** `just catalog dom <class>` → which plugin renders/styles it (and who else scripts or
-   styles the same class). Theme variables come from `configuration.theme` and `repos/quartz-themes-core`.
+1. **Find the source.** Component roots carry `data-quartz-plugin` / `data-quartz-component` (shown as
+   `← plugin/Component` in `just inspect`'s layout map). For inner classes: `just catalog dom <class>` → which
+   plugin renders/styles it (and who else scripts or styles the same class). Theme variables come from `configuration.theme` and `repos/quartz-themes-core`.
 2. **Baseline before editing:**
    `just visual-baseline --site fixture:bug-repro` (defaults: 5 discovered pages, desktop+mobile, light+dark;
    `--pages a,b`, `--all`, `--viewports desktop,tablet,mobile`, `--themes light`). ~30 s.

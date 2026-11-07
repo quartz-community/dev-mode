@@ -584,6 +584,8 @@ export interface BoxInfo {
 }
 
 export interface LayoutChild {
+  /** "plugin/Component" from Quartz's data-quartz-plugin attribution, if present. */
+  source?: string;
   tag: string;
   classes: string;
   id: string;
@@ -673,7 +675,15 @@ export function collectLayout(slots: [string, string][]): {
         )
         .map((c) => {
           const cv = visibility(c);
+          // Quartz annotates plugin component roots with data-quartz-plugin /
+          // data-quartz-component (core components/attribution.ts).
+          const attributed = c.matches("[data-quartz-plugin]")
+            ? c
+            : c.querySelector("[data-quartz-plugin]");
+          const plugin = attributed?.getAttribute("data-quartz-plugin");
+          const component = attributed?.getAttribute("data-quartz-component");
           return {
+            source: plugin ? `${plugin}/${component ?? "?"}` : undefined,
             tag: c.tagName.toLowerCase(),
             classes: Array.from(c.classList).join("."),
             id: c.id,

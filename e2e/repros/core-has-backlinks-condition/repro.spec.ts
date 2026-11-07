@@ -16,6 +16,15 @@ test.describe("has-backlinks condition", () => {
     await expect(page.locator(".backlinks a.internal")).toHaveCount(1);
   });
 
+  test("Backlinks with condition has-backlinks is hidden on a page without backlinks", async ({
+    page,
+    site,
+  }) => {
+    // nothing links to the index page
+    await page.goto(site.url("/"));
+    await expect(page.locator(".backlinks")).toHaveCount(0);
+  });
+
   test("control: index links to target (so target has a backlink)", async ({
     page,
     site,

@@ -2,7 +2,7 @@
 title: "Mermaid script crashes when syntax-highlighting is disabled"
 issue: null
 plugins: [obsidian-flavored-markdown]
-status: reproduced   # open | reproduced | fixed | wontfix
+status: fixed        # open | reproduced | fixed | wontfix
 ---
 
 # Mermaid script crashes when syntax-highlighting is disabled
@@ -24,4 +24,8 @@ Found by `just site-smoke fixture:bug-repro` (2026-11-07).
 ## Actual
 
 ## Notes
-<!-- Root cause, affected plugins (`just catalog impact <plugin>`), fix PR links. -->
+Fixed on branch `dev-mode/decoupling` of repos/obsidian-flavored-markdown: the control lookup moved to
+`src/scripts/mermaid-controls.ts` (`setupMermaidControls`), which treats `.clipboard-button` as optional and
+skips the expand popup (diagram still renders) if OFM's own controls are missing; `.center` falls back to
+`document`. Unit test: `test/mermaid-controls.test.ts`. The optional coupling is also declared via
+`quartz.capabilities.optional` (dom `.clipboard-button`) in OFM's manifest.

@@ -2,7 +2,7 @@
 title: "Layout condition has-backlinks is always false"
 issue: null
 plugins: [backlinks]
-status: reproduced   # open | reproduced | fixed | wontfix
+status: fixed        # open | reproduced | fixed | wontfix
 ---
 
 # Layout condition has-backlinks is always false
@@ -19,9 +19,13 @@ Found by the static catalog: `just catalog who-writes backlinks` (2026-11-07).
 2. Open `/` …
 
 ## Expected
-<!-- Asserted by repro.spec.ts -->
+Backlinks renders on `/target` (linked from index) and is absent on `/` (no backlinks).
 
-## Actual
+## Actual (before fix)
+`.backlinks` never rendered on any page.
 
 ## Notes
-<!-- Root cause, affected plugins (`just catalog impact <plugin>`), fix PR links. -->
+Root cause: the predicate read `fileData.backlinks`, which no plugin writes.
+Fix (repos/quartz, branch dev-mode/improvements): `conditions.ts` now derives backlinks from
+`props.allFiles` exactly like the backlinks component (`simplifySlug(fileData.slug)`, unlisted
+sources ignored). Unit test: `quartz/plugins/loader/conditions.test.ts`.
