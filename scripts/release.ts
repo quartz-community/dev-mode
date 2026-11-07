@@ -538,8 +538,9 @@ async function commandChangeset(context: Context): Promise<number> {
 
   const refusals: string[] = [];
   for (const pkg of packages) {
-    if (pkg.kind === "private")
-      refusals.push(`${pkg.repo}: private package, never released`);
+    // Quartz core is private (not on npm) but versions itself with changesets + git tags.
+    if (pkg.kind === "private" && !pkg.hasChangesetDir)
+      refusals.push(`${pkg.repo}: private package without changesets`);
     else if (!pkg.hasChangesetDir) {
       refusals.push(
         `${pkg.repo}: no .changeset directory (releases via ${pkg.kind}, not changesets)`,

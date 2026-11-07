@@ -52,6 +52,13 @@ and (with approval) `just push-repo quartz`.
 
 - `npm-ahead` means the clone is stale — releasing from it would regress. `just sync` first.
 - Dir ≠ npm name for some packages (`repos/fonts` = `@quartz-community/quartz-fonts`); the tools take dir or short names.
-- Quartz core (`@jackyzha0/quartz`) is private: it isn't published, only its lockfile is updated.
+- Quartz core (`@jackyzha0/quartz`) is not on npm, but is versioned with changesets since 5.1: add a
+  `.changeset/*.md` in `repos/quartz` for user-facing changes (`"@jackyzha0/quartz": minor`); on `v5` CI
+  opens a "chore: release Quartz" PR, and merging it tags `vX.Y.Z` + creates a GitHub release
+  (`.github/workflows/release.yaml`). Its lockfile is still updated after plugin releases. Note: inside
+  this workspace `npx changeset` finds the pnpm root instead of repos/quartz — write the file by hand
+  or use `just release-changeset quartz …`.
+- Plugins that need a newer Quartz must raise `quartz.quartzVersion` (semver range, e.g. `">=5.1.0"`);
+  Quartz enforces it at build / `plugin add` / `plugin doctor`. Release that as a plugin minor/major.
 - Syncer (`repos/syncer`) releases via GitHub releases (`version-bump.mjs` + tag), not npm — see `repos/syncer/AGENTS.md`.
 - Legacy bulk tagging recipes (`just publish-tags`, `publish-tag`) push tags directly — avoid unless the user asks.

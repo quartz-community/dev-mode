@@ -7,7 +7,9 @@ import semver from "semver";
  * - tag: bump package.json version, push a `v<version>` tag -> CI publishes.
  * - github-release: not on npm; pushing a version tag builds a GitHub release
  *   (Quartz Syncer).
- * - private: never published (Quartz core) — only consumes releases.
+ * - private: not on npm (Quartz core). Consumes plugin releases via its lockfile, and is
+ *   versioned with changesets itself: a pending changeset on v5 -> CI opens a
+ *   "chore: release Quartz" PR -> merging it tags v<version> + GitHub release.
  */
 export type ReleaseKind = "changesets" | "tag" | "github-release" | "private";
 
@@ -133,6 +135,18 @@ export function classifyStatus(input: ClassifyInput): Classification {
       return {
         status: "lockfile-stale",
         next: "just update-quartz-lockfile (then push)",
+      };
+    }
+    if (input.pendingChangesetCount > 0) {
+      return {
+        status: "ready",
+        next: "[ASK] push to v5 -> CI opens 'chore: release Quartz' PR -> merge tags the release",
+      };
+    }
+    if (input.releasableCommitCount > 0) {
+      return {
+        status: "needs-changeset",
+        next: "add a changeset in repos/quartz (npx changeset, or just release-changeset quartz …)",
       };
     }
     return { status: "clean", next: "-" };

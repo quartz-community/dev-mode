@@ -153,11 +153,21 @@ describe("classifyStatus", () => {
     ).toBe("needs-version-bump");
   });
 
-  it("private packages only report dirty / lockfile-stale / clean", () => {
+  it("private packages (Quartz core) release via changesets + tags, not npm", () => {
+    expect(classifyStatus(input({ kind: "private" })).status).toBe("clean");
     expect(
       classifyStatus(input({ kind: "private", releasableCommitCount: 9 }))
         .status,
-    ).toBe("clean");
+    ).toBe("needs-changeset");
+    expect(
+      classifyStatus(
+        input({
+          kind: "private",
+          releasableCommitCount: 9,
+          pendingChangesetCount: 2,
+        }),
+      ).status,
+    ).toBe("ready");
     expect(
       classifyStatus(
         input({ kind: "private", staleLockEntries: ["a 1.0.0 -> 1.1.0"] }),
