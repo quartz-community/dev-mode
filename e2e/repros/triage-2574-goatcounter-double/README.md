@@ -2,7 +2,7 @@
 title: "GoatCounter counts every landing page twice (#2574)"
 issue: "jackyzha0/quartz#2574"
 plugins: []
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # GoatCounter counts every landing page twice (#2574)

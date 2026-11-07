@@ -2,4 +2,6 @@ extends: default
 configuration:
   pageTitle: "Repro: triage-2531-explicit-publish-assets"
   baseUrl: localhost
+  # opt-in: only copy files published pages reference
+  publishAssets: referenced
 enable: [explicit-publish]
