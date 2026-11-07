@@ -57,4 +57,27 @@ test.describe("jackyzha0/quartz#2572 permalink is the page's address", () => {
     expect(Object.keys(index)).toContain("2024040414012730");
     expect(Object.keys(index)).not.toContain("日本語フォルダ/日本語記事");
   });
+
+  test("navigation keeps the note in its folder (explorer, folder page, breadcrumbs)", async ({
+    page,
+    site,
+  }) => {
+    await page.goto(site.url("2024040414012730"));
+    // explorer: the note is listed inside its folder, linking to the permalink
+    const folder = page
+      .locator('.explorer [data-folderpath="日本語フォルダ/index"]')
+      .first();
+    await expect(folder).toHaveCount(1);
+    const inFolder = page.locator(
+      '.explorer li:has([data-folderpath="日本語フォルダ/index"]) a[href$="2024040414012730"]',
+    );
+    await expect(inFolder).toHaveCount(1);
+    // breadcrumbs: Home › 日本語フォルダ › Test Article
+    await expect(page.locator(".breadcrumb-container")).toContainText(
+      "日本語フォルダ",
+    );
+    // the folder page lists it
+    await page.goto(site.url(encodeURI("日本語フォルダ/")));
+    await expect(page.locator(".page-listing")).toContainText("Test Article");
+  });
 });
