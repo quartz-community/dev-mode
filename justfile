@@ -5,8 +5,9 @@ default:
     @just --list
 
 # One-screen orientation: toolchain, browser, dirty repos, stale dist/, generated artifacts
+[positional-arguments]
 overview *args:
-    @pnpm tsx scripts/overview.ts {{args}}
+    @pnpm tsx scripts/overview.ts "$@"
 
 # --- Setup & Teardown ---
 
@@ -55,8 +56,9 @@ build:
     pnpm turbo run build
 
 # List packages with local changes (uncommitted source edits or unpushed commits)
+[positional-arguments]
 changed *args:
-    @pnpm tsx scripts/changed.ts {{args}}
+    @pnpm tsx scripts/changed.ts "$@"
 
 # Build packages with local changes + their dependents (turbo --affected is blind here: repos/ is git-ignored at the root)
 build-affected:
@@ -295,20 +297,24 @@ deploy-changesets-dry:
 # --- Releases (local prep only; pushing/merging/publishing stays manual) ---
 
 # What needs releasing across the ecosystem (versions vs npm, changesets, unpushed, lockfile)
+[positional-arguments]
 release-status *args:
-    pnpm tsx scripts/release.ts status {{args}}
+    pnpm tsx scripts/release.ts status "$@"
 
 # Ordered release plan for a set of packages, incl. dependents that must follow (--bump patch|minor|major)
+[positional-arguments]
 release-plan +args:
-    pnpm tsx scripts/release.ts plan {{args}}
+    pnpm tsx scripts/release.ts plan "$@"
 
 # Write the same changeset into several repos: --bump patch --summary "..." <pkg...>
+[positional-arguments]
 release-changeset +args:
-    pnpm tsx scripts/release.ts changeset {{args}}
+    pnpm tsx scripts/release.ts changeset "$@"
 
 # Pre-flight a release set: build/typecheck/lint/format/test for packages + dependents
+[positional-arguments]
 release-verify +args:
-    pnpm tsx scripts/release.ts verify {{args}}
+    pnpm tsx scripts/release.ts verify "$@"
 
 # Tag all repos with their current version to trigger CI publish (infrastructure first, then plugins)
 publish-tags:
@@ -441,8 +447,9 @@ e2e-build +fixtures="all":
     pnpm tsx e2e/helpers/build-fixture.ts {{fixtures}}
 
 # Run E2E tests (requires fixtures to be built first); extra args go to playwright
+[positional-arguments]
 e2e-test *args:
-    pnpm exec playwright test --config e2e/playwright.config.ts {{args}}
+    pnpm exec playwright test --config e2e/playwright.config.ts "$@"
 
 # Full E2E: build all fixtures + run tests + run repros
 e2e: (e2e-build "all")
@@ -465,67 +472,82 @@ site-targets:
     pnpm tsx scripts/site.ts targets
 
 # Build a site target into .dev/sites/<id> (warns about stale plugin dist/)
+[positional-arguments]
 site-build target *args:
-    pnpm tsx scripts/site.ts build {{target}} {{args}}
+    pnpm tsx scripts/site.ts build "$@"
 
 # Build and serve a site target statically (production-like, honours base path)
+[positional-arguments]
 site-serve target *args:
-    pnpm tsx scripts/site.ts serve {{target}} {{args}}
+    pnpm tsx scripts/site.ts serve "$@"
 
 # Quartz live-reload server for a site target, in a sandbox
+[positional-arguments]
 site-dev target *args:
-    pnpm tsx scripts/site.ts dev {{target}} {{args}}
+    pnpm tsx scripts/site.ts dev "$@"
 
 # Whole-site smoke test: broken links/assets, console + page errors, SPA errors, mobile overflow
+[positional-arguments]
 site-smoke target *args:
-    pnpm tsx scripts/smoke.ts {{target}} {{args}}
+    pnpm tsx scripts/smoke.ts "$@"
 
 # Print the fully resolved quartz.config.yaml for a target (after overlays)
+[positional-arguments]
 site-config target *args:
-    pnpm tsx scripts/site.ts config {{target}} {{args}}
+    pnpm tsx scripts/site.ts config "$@"
 
 # Plugin catalog: build | show <pkg> | who-writes <key> | who-reads <key> | impact <pkg> | dom <class> | search <text>
+[positional-arguments]
 catalog *args:
-    pnpm tsx scripts/catalog.ts {{args}}
+    pnpm tsx scripts/catalog.ts "$@"
 
 # Runtime data-flow trace of a real build: who reads/writes which file.data key (prototype)
+[positional-arguments]
 trace site="fixture:bug-repro" *args:
-    pnpm tsx scripts/trace.ts --site {{site}} {{args}}
+    pnpm tsx scripts/trace.ts --site "$@"
 
 # Inspect rendered page(s): errors, layout map, computed styles, screenshot (--screenshot, --selector, --viewport mobile, --theme dark)
+[positional-arguments]
 inspect *args:
-    pnpm tsx scripts/inspect.ts {{args}}
+    pnpm tsx scripts/inspect.ts "$@"
 
 # Visual regression: capture <label> | compare <a> <b> | baseline | check
+[positional-arguments]
 visual *args:
-    pnpm tsx scripts/visual.ts {{args}}
+    pnpm tsx scripts/visual.ts "$@"
 
 # Capture the "base" visual snapshot (screenshots + computed styles) before a CSS/UI change
+[positional-arguments]
 visual-baseline *args:
-    pnpm tsx scripts/visual.ts baseline {{args}}
+    pnpm tsx scripts/visual.ts baseline "$@"
 
 # Capture "head" and compare against "base": pixel diff + text style diff report (exit 1 on change)
+[positional-arguments]
 visual-check *args:
-    pnpm tsx scripts/visual.ts check {{args}}
+    pnpm tsx scripts/visual.ts check "$@"
 
 # --- Repros (e2e/repros/<slug>: content + config overlay + Playwright spec) ---
 
 # Scaffold a new repro (e.g. just repro-new 2490-mermaid-spa --issue jackyzha0/quartz#2490 --plugin graph)
+[positional-arguments]
 repro-new slug *args:
-    pnpm tsx scripts/repro.ts new {{slug}} {{args}}
+    pnpm tsx scripts/repro.ts new "$@"
 
 # List repros with status
 repro-list:
     pnpm tsx scripts/repro.ts list
 
 # Build a repro site
+[positional-arguments]
 repro-build slug *args:
-    pnpm tsx scripts/repro.ts build {{slug}} {{args}}
+    pnpm tsx scripts/repro.ts build "$@"
 
 # Run repro specs (all, or one slug)
+[positional-arguments]
 repro-test slug="" *args:
-    pnpm tsx scripts/repro.ts test {{slug}} {{args}}
+    pnpm tsx scripts/repro.ts test "$@"
 
 # Build + test one repro; add --expect-fail to confirm it reproduces the bug
+[positional-arguments]
 repro-check slug *args:
-    pnpm tsx scripts/repro.ts check {{slug}} {{args}}
+    pnpm tsx scripts/repro.ts check "$@"
