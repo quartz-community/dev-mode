@@ -2,7 +2,7 @@
 title: "Titles in blockquotes shouldn't be in the TOC"
 issue: "jackyzha0/quartz#2515"
 plugins: [table-of-contents]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Titles in blockquotes shouldn't be in the TOC (jackyzha0/quartz#2515)

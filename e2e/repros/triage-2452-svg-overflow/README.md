@@ -2,7 +2,7 @@
 title: "SVG image can stretch out of the screen"
 issue: "jackyzha0/quartz#2452"
 plugins: [obsidian-flavored-markdown]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # SVG image can stretch out of the screen (jackyzha0/quartz#2452)

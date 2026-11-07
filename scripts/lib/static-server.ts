@@ -115,6 +115,21 @@ export function startStaticServer(
       send404();
       return;
     }
+    // Like GitHub Pages, Netlify and nginx: a directory without its trailing slash redirects,
+    // so relative links on folder pages resolve as they do in production.
+    if (
+      file.endsWith(`${sep}index.html`) &&
+      !stripped.endsWith("/") &&
+      !stripped.endsWith("index.html") &&
+      stripped !== "/"
+    ) {
+      const query = req.url?.includes("?")
+        ? req.url.slice(req.url.indexOf("?"))
+        : "";
+      res.writeHead(301, { Location: `${rawUrl}/${query}` });
+      res.end();
+      return;
+    }
     const contentType =
       MIME_TYPES[extname(file).toLowerCase()] ?? "application/octet-stream";
     res.writeHead(200, {

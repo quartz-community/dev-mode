@@ -2,7 +2,7 @@
 title: "Repro: Obsidian syntax with remark-obsidian 2.x, preset: strict"
 issue: null
 plugins: [obsidian-flavored-markdown]
-status: fixed   # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Repro: ofm-remark-obsidian-2-strict

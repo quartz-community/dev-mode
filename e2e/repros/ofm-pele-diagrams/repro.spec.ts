@@ -12,7 +12,8 @@ function recordRequests(page: Page): string[] {
 }
 
 const pele = (urls: string[]) => urls.filter((u) => u.includes(PELE_DIR));
-const cdn = (urls: string[]) => urls.filter((u) => u.includes("cdn.jsdelivr.net/npm/pele"));
+const cdn = (urls: string[]) =>
+  urls.filter((u) => u.includes("cdn.jsdelivr.net/npm/pele"));
 
 test.describe("ofm diagramRenderer: pele", () => {
   test("a page without Mermaid fences never downloads Pele", async ({
@@ -41,7 +42,9 @@ test.describe("ofm diagramRenderer: pele", () => {
 
     expect(cdn(urls)).toEqual([]);
     expect(pele(urls).some((u) => u.endsWith(`${PELE_DIR}lazy.js`))).toBe(true);
-    expect(pele(urls).every((u) => new URL(u).pathname.startsWith("/pele-site/"))).toBe(true);
+    expect(
+      pele(urls).every((u) => new URL(u).pathname.startsWith("/pele-site/")),
+    ).toBe(true);
     // Chunks are per diagram type: nothing for diagram types that aren't on the page.
     expect(pele(urls).some((u) => u.includes("/diagrams/gantt"))).toBe(false);
     expect(pageProblems.all()).toEqual([]);
@@ -54,13 +57,17 @@ test.describe("ofm diagramRenderer: pele", () => {
   }) => {
     const urls = recordRequests(page);
     await page.goto(site.url("/"));
-    await page.locator('article a.internal[data-slug="nested/deeper/deep-diagram"]').click();
+    await page
+      .locator('article a.internal[data-slug="nested/deeper/deep-diagram"]')
+      .click();
     await expect(page.locator("code.mermaid svg")).toHaveCount(1);
     await page.goto(site.url("nested/deeper/deep-diagram"));
     await expect(page.locator("code.mermaid svg")).toHaveCount(1);
-    expect(pele(urls).every((u) => new URL(u).pathname.startsWith(`/pele-site/${PELE_DIR}`))).toBe(
-      true,
-    );
+    expect(
+      pele(urls).every((u) =>
+        new URL(u).pathname.startsWith(`/pele-site/${PELE_DIR}`),
+      ),
+    ).toBe(true);
     expect(pageProblems.all()).toEqual([]);
   });
 

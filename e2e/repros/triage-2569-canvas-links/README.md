@@ -2,7 +2,7 @@
 title: "Broken links in canvas"
 issue: "jackyzha0/quartz#2569"
 plugins: [canvas-page]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Broken links in canvas (jackyzha0/quartz#2569)

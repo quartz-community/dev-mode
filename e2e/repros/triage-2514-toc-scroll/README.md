@@ -2,7 +2,7 @@
 title: "Long TOC not fully scrollable (#2514)"
 issue: "jackyzha0/quartz#2514"
 plugins: [table-of-contents]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Long TOC not fully scrollable (#2514)

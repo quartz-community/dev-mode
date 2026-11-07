@@ -2,7 +2,7 @@
 title: "recent-notes list cut off in a short window (#2463)"
 issue: "jackyzha0/quartz#2463"
 plugins: [recent-notes]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # recent-notes list cut off in a short window (#2463)

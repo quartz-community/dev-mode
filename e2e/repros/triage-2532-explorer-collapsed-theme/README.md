@@ -2,7 +2,7 @@
 title: "Collapsed Explorer title clipped with community themes (#2532)"
 issue: "jackyzha0/quartz#2532"
 plugins: [explorer, quartz-themes-core]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Collapsed Explorer title clipped with community themes (#2532)

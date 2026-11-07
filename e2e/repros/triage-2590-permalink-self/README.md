@@ -2,7 +2,7 @@
 title: "permalink equal to own path → infinite redirect"
 issue: "jackyzha0/quartz#2590"
 plugins: [alias-redirects]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # permalink equal to own path → infinite redirect (jackyzha0/quartz#2590)

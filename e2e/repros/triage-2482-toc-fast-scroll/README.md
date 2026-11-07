@@ -2,7 +2,7 @@
 title: "TOC highlight out of sync after fast scroll (#2482)"
 issue: "jackyzha0/quartz#2482"
 plugins: [table-of-contents]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # TOC highlight out of sync after fast scroll (#2482)

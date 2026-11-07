@@ -2,7 +2,7 @@
 title: "Numeric citation style has wrong newlines"
 issue: "jackyzha0/quartz#2471"
 plugins: [citations]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Numeric citation style has wrong newlines (jackyzha0/quartz#2471)

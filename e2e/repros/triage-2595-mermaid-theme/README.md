@@ -2,7 +2,7 @@
 title: "Mermaid fails with hsl(calc(...)) theme colours"
 issue: "jackyzha0/quartz#2595"
 plugins: [obsidian-flavored-markdown]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Mermaid fails with hsl(calc(...)) theme colours (jackyzha0/quartz#2595)

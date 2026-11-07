@@ -2,7 +2,7 @@
 title: "configuration.theme.typography ignored with quartz-fonts (#2507)"
 issue: "jackyzha0/quartz#2507"
 plugins: [fonts]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # configuration.theme.typography ignored with quartz-fonts (#2507)

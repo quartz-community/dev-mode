@@ -15,6 +15,7 @@ import {
   basePathFromBaseUrl,
   normalizeBasePath,
   resolveSiteFile,
+  startStaticServer,
 } from "../scripts/lib/static-server.js";
 import { renderOverlay, renderReadme, renderSpec } from "../scripts/repro.js";
 
@@ -167,6 +168,25 @@ describe("static server helpers", () => {
     );
     expect(resolveSiteFile(dir, "/missing")).toBeNull();
     expect(resolveSiteFile(dir, "/../../etc/passwd")).toBeNull();
+  });
+
+  it("redirects a directory without its trailing slash, like real static hosts", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "site-"));
+    writeFileSync(join(dir, "index.html"), "i");
+    writeFileSync(join(dir, "page.html"), "p");
+    mkdirSync(join(dir, "folder"));
+    writeFileSync(join(dir, "folder/index.html"), "f");
+    const server = await startStaticServer({ root: dir, basePath: "/base" });
+    try {
+      const folder = await fetch(server.url("folder"), { redirect: "manual" });
+      expect(folder.status).toBe(301);
+      expect(folder.headers.get("location")).toBe("/base/folder/");
+      expect((await fetch(server.url("folder/"))).status).toBe(200);
+      expect((await fetch(server.url("page"))).status).toBe(200);
+      expect((await fetch(server.url("/"))).status).toBe(200);
+    } finally {
+      await server.close();
+    }
   });
 });
 

@@ -9,6 +9,15 @@ test.describe("jackyzha0/quartz#2452 SVG embed fits its container", () => {
     await expect(obj).toBeVisible();
     const box = await obj.boundingBox();
     expect(box!.width).toBeLessThanOrEqual(article!.width + 1);
+    // aspect ratio (3000x400) is preserved when the width is capped
+    expect(Math.abs(box!.height - (box!.width * 400) / 3000)).toBeLessThan(2);
+    // an explicit width (![[wide.svg|200]]) is kept, height follows the ratio
+    const sized = await page
+      .locator('article object[data*="wide.svg"]')
+      .nth(1)
+      .boundingBox();
+    expect(Math.round(sized!.width)).toBe(200);
+    expect(Math.abs(sized!.height - (200 * 400) / 3000)).toBeLessThan(2);
     const docOverflow = await page.evaluate(
       () => document.documentElement.scrollWidth > window.innerWidth,
     );

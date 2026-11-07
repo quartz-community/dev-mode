@@ -2,7 +2,7 @@
 title: "Parent tag page collides with child tag directory"
 issue: "jackyzha0/quartz#2556"
 plugins: [tag-page]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Parent tag page collides with child tag directory (jackyzha0/quartz#2556)
