@@ -2,7 +2,7 @@
 title: "Config colours / --darkgray overrides ignored with @quartz-themes/core (#2509)"
 issue: "jackyzha0/quartz#2509"
 plugins: [quartz-themes-core]
-status: reproduced # open | reproduced | fixed | wontfix
+status: wontfix # by design; documented in docs/configuration.md (theme colours)
 ---
 
 # Config colours / --darkgray overrides ignored with @quartz-themes/core (#2509)
@@ -10,6 +10,10 @@ status: reproduced # open | reproduced | fixed | wontfix
 ## Problem
 
 The obsidian/ttrpg templates enable @quartz-themes/core. In dark mode its CSS colours text through Obsidian variables, so configuration.theme.colors and element-scoped Quartz vars (custom.scss) have no effect. Tested with tokyo-night (template default theme 'default' isn't installed in the workspace).
+
+## Resolution
+
+By design: a theme brings its own colour scheme. `docs/configuration.md` now explains this and shows how to override a theme's variables in `quartz/styles/custom.scss`; the spec checks that snippet.
 
 ## Steps
 

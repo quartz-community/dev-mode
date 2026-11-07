@@ -249,7 +249,8 @@ restore-dist:
 
 # Commit all changes in a specific repo with a message (excludes dist/)
 commit repo msg:
-    git -C repos/{{repo}} add --all --ignore-errors -- . ':!dist/'
+    # Exclude dist/ only where it is tracked: excluding a gitignored dist/ makes `git add` fail.
+    if git -C repos/{{repo}} ls-files --error-unmatch dist >/dev/null 2>&1; then git -C repos/{{repo}} add --all -- . ':!dist/'; else git -C repos/{{repo}} add --all -- .; fi
     git -C repos/{{repo}} commit -m "{{msg}}"
 
 # Commit specific files in a repo (stages ONLY the listed paths)

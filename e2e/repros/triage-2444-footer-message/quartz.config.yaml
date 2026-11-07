@@ -1,0 +1,13 @@
+# Overlay on top of a base config — keep it to what the repro needs.
+# See scripts/lib/sandbox.ts (ConfigOverlay) for all keys.
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2444-footer-message"
+  baseUrl: localhost
+plugins:
+  footer:
+    enabled: true
+    options:
+      links:
+        GitHub: https://github.com/jackyzha0/quartz
+      message: 'Licensed under <a href="/license">CC BY 4.0</a> · <em>hello</em>'
