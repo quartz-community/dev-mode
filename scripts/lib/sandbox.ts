@@ -609,19 +609,28 @@ export function extractDiagnostics(log: string): {
 } {
   const warnings: string[] = [];
   const errors: string[] = [];
+  let last: string[] | undefined;
   for (const rawLine of stripAnsi(log).split("\n")) {
     const line = rawLine.trim();
     if (!line) continue;
     // Plugin-index export conflicts are expected noise in a full workspace.
     if (/conflicts across plugins/.test(line)) continue;
-    if (line.startsWith("⚠") || /^warn(ing)?\b/i.test(line))
+    // "→ …" hint lines (where it failed, what to do) belong to the diagnostic above them.
+    if (line.startsWith("→") && last && last.length > 0) {
+      last[last.length - 1] += `\n    ${line}`;
+      continue;
+    }
+    last = undefined;
+    if (line.startsWith("⚠") || /^warn(ing)?\b/i.test(line)) {
       warnings.push(line);
-    else if (
+      last = warnings;
+    } else if (
       line.startsWith("✗") ||
       /^(error|Error:|TypeError|ReferenceError|SyntaxError)\b/.test(line) ||
       /Failed to (load|instantiate|build)/i.test(line)
     ) {
       errors.push(line);
+      last = errors;
     }
   }
   return { warnings, errors };

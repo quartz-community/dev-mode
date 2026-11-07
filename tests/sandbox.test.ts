@@ -132,6 +132,18 @@ describe("extractDiagnostics", () => {
     ]);
     expect(d.errors).toEqual(['✗ Failed to instantiate plugin "graph": boom']);
   });
+
+  it("keeps → hint lines with the diagnostic above them", () => {
+    const log = [
+      "✗ graph@1.0.0 failed to load its entry module: boom",
+      "    → at /x/graph/dist/index.js:1:7",
+      "Emitted 70 files",
+      "→ stray hint without a diagnostic",
+    ].join("\n");
+    expect(extractDiagnostics(log).errors).toEqual([
+      "✗ graph@1.0.0 failed to load its entry module: boom\n    → at /x/graph/dist/index.js:1:7",
+    ]);
+  });
 });
 
 describe("static server helpers", () => {
