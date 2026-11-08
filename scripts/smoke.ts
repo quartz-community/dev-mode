@@ -326,8 +326,9 @@ async function main() {
         await page.close();
         visited += 1;
       }
-      // Mobile overflow on a sample (overflow is mostly layout-wide, not per page).
-      for (const file of pages.slice(0, 10)) {
+      // Mobile overflow on every page: it is often one page's content (a long title or identifier),
+      // and a sample of ten missed most of the docs site's.
+      for (const file of pages) {
         const pagePath = pagePathFor(file);
         const page = await mobile.newPage();
         await page
@@ -355,6 +356,28 @@ async function main() {
               culprits.push(
                 `${el.tagName.toLowerCase()}${el.className && typeof el.className === "string" ? "." + el.className.trim().split(/\s+/).join(".") : ""} (right=${Math.round(r.right)})`,
               );
+            }
+          }
+          // Text that overflows its box does not widen the box: report the text run instead.
+          if (culprits.length === 0) {
+            const walker = document.createTreeWalker(
+              document.body,
+              NodeFilter.SHOW_TEXT,
+            );
+            for (
+              let t = walker.nextNode();
+              t && culprits.length < 5;
+              t = walker.nextNode()
+            ) {
+              const range = document.createRange();
+              range.selectNodeContents(t);
+              const past = Array.from(range.getClientRects()).find(
+                (r) => r.right > width + 1,
+              );
+              if (past && t.parentElement)
+                culprits.push(
+                  `text "${(t.textContent ?? "").trim().slice(0, 40)}" in ${t.parentElement.tagName.toLowerCase()} (right=${Math.round(past.right)})`,
+                );
             }
           }
           return {
