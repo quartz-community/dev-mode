@@ -7,3 +7,4 @@ export * from "./npm.js";
 export * from "./workspace.js";
 export * from "./status.js";
 export * from "./verify.js";
+export * from "./drift.js";

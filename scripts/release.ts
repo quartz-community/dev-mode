@@ -6,12 +6,13 @@
  *   release changeset --bump <type> --summary "<text>" <pkg...> [--name <slug>] [--dry-run] [--json]
  *   release verify <pkg...> [--no-dependents] [--tasks build,typecheck,lint,test] [--timeout <s>] [--skip-doctor] [--json]
  *   release wait-npm <name>@<version> [--timeout <s>] [--interval <s>] [--json]
+ *   release drift [pkg...] [--all] [--ignore <glob,...>] [--strict] [--json]
  *
  * Nothing here pushes, tags, merges or publishes. `changeset` writes local
  * files; `plan` prints the outward-facing commands for a human to approve.
  * `--repos-dir <path>` points every subcommand at another repos/ directory.
  */
-import { join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { parseArgs } from "./lib/args.js";
 import { runWithConcurrency } from "./lib/concurrency.js";
 import { runCommand, runCommandCapture, TIMEOUTS } from "./lib/exec.js";
@@ -20,6 +21,7 @@ import { readManifest } from "./lib/manifest.js";
 import type { Manifest } from "./lib/types.js";
 import {
   buildReleaseSteps,
+  collectDrift,
   collectRepoStatus,
   computeReleasePlan,
   DEFAULT_VERIFY_TASKS,
@@ -27,9 +29,13 @@ import {
   fetchNpmInfos,
   findTurboSummary,
   formatCheckScript,
+  formatDriftGroup,
+  groupDrift,
+  matchesIgnore,
   isBumpType,
   loadWorkspacePackages,
   parsePackageSpec,
+  readPnpmLock,
   readTurboSummary,
   resolvePackage,
   transitiveDependents,
@@ -38,6 +44,7 @@ import {
   type BumpType,
   type LoadedPackage,
   type NpmInfo,
+  type RepoDriftResult,
   type RepoReleaseStatus,
   type ReleaseStatus,
   type TaskOutcome,
@@ -52,6 +59,8 @@ const BOOLEAN_FLAGS = [
   "no-dependents",
   "skip-doctor",
   "help",
+  "all",
+  "strict",
 ];
 
 class UsageError extends Error {}
@@ -283,10 +292,15 @@ async function commandStatus(context: Context): Promise<number> {
     error: error.message,
   }));
   const summary = buildSummary(statuses, offline);
+  const drift = driftFor(context, selected);
 
   if (context.json) {
     console.log(
-      JSON.stringify({ offline, repos: statuses, failures, summary }, null, 2),
+      JSON.stringify(
+        { offline, repos: statuses, failures, summary, drift },
+        null,
+        2,
+      ),
     );
     return failures.length > 0 ? 1 : 0;
   }
@@ -392,9 +406,163 @@ async function commandStatus(context: Context): Promise<number> {
     console.log(`  npm lookup failed: ${error}`);
   for (const failure of failures)
     console.log(`  status failed: ${failure.repo}: ${failure.error}`);
+  printDriftWarnings(drift);
   console.log("\nNext:");
   for (const action of summary.actions) console.log(`  - ${action}`);
   return failures.length > 0 ? 1 : 0;
+}
+
+// --------------------------------------------------------------------------
+// drift
+// --------------------------------------------------------------------------
+
+interface DriftReport {
+  results: RepoDriftResult[];
+  error?: string;
+}
+
+function ignorePatterns(context: Context): string[] {
+  const raw = context.flags.ignore;
+  return typeof raw === "string"
+    ? raw
+        .split(",")
+        .map((pattern) => pattern.trim())
+        .filter(Boolean)
+    : [];
+}
+
+/** Lockfile-vs-workspace drift for the given packages; never throws. */
+function driftFor(context: Context, packages: LoadedPackage[]): DriftReport {
+  try {
+    const pnpmLock = readPnpmLock(
+      join(dirname(context.reposDir), "pnpm-lock.yaml"),
+    );
+    const ignore = ignorePatterns(context);
+    return {
+      results: collectDrift(
+        packages.map((pkg) => ({ repo: pkg.repo, path: pkg.path })),
+        pnpmLock,
+      ).map((result) => ({
+        ...result,
+        drift: result.drift.filter(
+          (entry) => !matchesIgnore(entry.dependency, ignore),
+        ),
+      })),
+    };
+  } catch (error) {
+    return {
+      results: [],
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+const DRIFT_HINT =
+  "the repo's own CI (npm ci) tests other versions than the workspace (pnpm); refresh its lockfile with `npm install --package-lock-only` in the repo (inside nix develop)";
+
+function printDriftWarnings(report: DriftReport): void {
+  if (report.error) {
+    console.log(`  drift check skipped: ${report.error}`);
+    return;
+  }
+  const groups = groupDrift(report.results.flatMap((result) => result.drift));
+  if (groups.length === 0) return;
+  const repos = new Set(groups.flatMap((group) => group.repos));
+  console.log(
+    `  lockfile drift: ${groups.length} dependenc${groups.length === 1 ? "y" : "ies"} in ${repos.size} repo(s) differ in major/minor between package-lock.json and the workspace (details: just drift):`,
+  );
+  for (const group of groups.slice(0, 8))
+    console.log(`    - ${formatDriftGroup(group, 4)}`);
+  if (groups.length > 8) console.log(`    - … ${groups.length - 8} more`);
+}
+
+async function commandDrift(context: Context): Promise<number> {
+  const selected = selectPackages(loadPackages(context), context.args);
+  const report = driftFor(context, selected);
+  if (report.error) throw new Error(report.error);
+  const entries = report.results.flatMap((result) => result.drift);
+  const groups = groupDrift(entries);
+  const compared = report.results.filter((result) => !result.skipped);
+  const skipped = report.results.filter((result) => result.skipped);
+  const drifting = new Set(entries.map((entry) => entry.repo));
+  const exitCode = entries.length > 0 && context.flags.strict ? 1 : 0;
+
+  if (context.json) {
+    console.log(
+      JSON.stringify(
+        {
+          drift: entries,
+          groups,
+          repos: report.results,
+          ignore: ignorePatterns(context),
+          summary: {
+            compared: compared.length,
+            skipped: skipped.length,
+            drifting: drifting.size,
+            dependencies: groups.length,
+          },
+        },
+        null,
+        2,
+      ),
+    );
+    return exitCode;
+  }
+
+  if (context.flags.all) {
+    printTable(
+      [
+        "Repo",
+        "Dependency",
+        "Field",
+        "Specifier",
+        "Lockfile",
+        "Workspace",
+        "Drift",
+        "Newer",
+      ],
+      entries.map((entry) => [
+        entry.repo,
+        entry.dependency,
+        entry.field,
+        entry.specifier,
+        entry.lockfile,
+        entry.workspace,
+        entry.level,
+        entry.newer,
+      ]),
+    );
+  } else if (groups.length > 0) {
+    printTable(
+      ["Dependency", "Drift", "Lockfile", "Workspace", "Repos"],
+      groups.map((group) => [
+        group.dependency,
+        group.level,
+        group.lockfileVersions.join(" "),
+        group.workspaceVersions.join(" "),
+        group.repos.length > 4
+          ? `${group.repos.length}: ${group.repos.slice(0, 3).join(", ")}, …`
+          : group.repos.join(", "),
+      ]),
+    );
+  }
+  if (entries.length > 0) console.log("");
+  const deps = compared.reduce((sum, result) => sum + result.compared, 0);
+  console.log(
+    `Compared ${deps} direct dependencies of ${compared.length} repo(s) with a package-lock.json against pnpm-lock.yaml (major/minor only; @quartz-community/@quartz-themes/@jackyzha0 are linked on purpose).`,
+  );
+  for (const result of skipped) {
+    if (result.skipped !== "no package-lock.json" || context.args.length > 0)
+      console.log(`  skipped ${result.repo}: ${result.skipped}`);
+  }
+  if (entries.length === 0) {
+    console.log("No drift.");
+    return 0;
+  }
+  console.log(
+    `\n${groups.length} dependenc${groups.length === 1 ? "y" : "ies"} drift in ${drifting.size} repo(s) (isolated drift first; --all for one row per repo, --ignore '@types/*' to filter): ${DRIFT_HINT}.`,
+  );
+  return exitCode;
 }
 
 // --------------------------------------------------------------------------
@@ -840,6 +1008,8 @@ const USAGE = `Usage: pnpm tsx scripts/release.ts <command> [options]
   changeset --bump <type> --summary "<text>" <pkg...> [--name <slug>] [--dry-run]
   verify <pkg...> [--no-dependents] [--tasks a,b] [--timeout <s>] [--skip-doctor]
   wait-npm <name>@<version>... [--timeout <s>] [--interval <s>]
+  drift [pkg...] [--all] [--ignore a,b*] [--strict]
+                                          package-lock.json vs workspace (pnpm) versions (--strict: exit 1 on drift)
 
 All commands accept --json and --repos-dir <path>. Nothing here pushes, tags or publishes.`;
 
@@ -856,6 +1026,8 @@ async function main(): Promise<number> {
       return commandVerify(context);
     case "wait-npm":
       return commandWaitNpm(context);
+    case "drift":
+      return commandDrift(context);
     case "help":
       console.log(USAGE);
       return 0;

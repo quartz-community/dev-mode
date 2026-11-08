@@ -20,6 +20,26 @@ just release-status --offline  # skip npm lookups
 Statuses: `clean`, `needs-changeset` (releasable commits, no changeset), `ready` (changeset pending),
 `needs-version-bump`, `version-bumped-unpublished`, `npm-ahead` (pull first! `just sync`), `lockfile-stale`, `dirty`.
 Non-release noise (e.g. modified `.gitignore`) is ignored.
+The summary ends with **lockfile drift** (same data as `just drift`, below).
+
+```bash
+just ci-status                 # latest CI per workflow on every repo's default branch; exit 1 if any fails
+just ci-status --prs           # + open PRs' check state ("no-checks (version PR …)" = never tested)
+just ci-status tui graph --json
+```
+Run it before releasing: a red default branch (e.g. tui's CI, red unnoticed for months) means the
+release CI may fail too or publish untested code. It only reads (`gh api`, `gh pr list`).
+
+```bash
+just drift                     # repo package-lock.json vs workspace pnpm resolution, major/minor only
+just drift quartz-themes-core --all
+just drift --ignore '@types/*,sass*'   # filter noise; --strict exits 1 on drift
+```
+Workspace tests run against pnpm's versions; the repo's own CI runs against its `package-lock.json`.
+Drift in one or two repos (sorted first) is the kind that broke themes-core's CI (lucide 1.26 vs 1.70).
+Fix: refresh the lockfile in that repo (`npm install --package-lock-only`, inside `nix develop`) and run
+its CI-equivalent checks with npm (`npm ci && npm run check`) before releasing. Widespread drift (`@types/node`
+in every repo) just means lockfiles are old.
 
 ## 2. Plan the set
 
@@ -50,6 +70,11 @@ and (with approval) `just push-repo quartz`.
 
 ## Gotchas
 
+- Version PRs ("chore: version package") get **no CI**: changesets/action pushes them with `GITHUB_TOKEN`,
+  which triggers no workflows, so the lockfile `version-packages` rewrites is merged untested. `just ci-status --prs`
+  flags them. Prototype fix (release.yml runs ci.yml on the PR head and posts a `CI / version PR` status):
+  `repos/note-properties` branch `dev-mode/version-pr-ci`. Until it is rolled out, check a version PR locally
+  (`git checkout changeset-release/main && npm ci && npm run check` in the repo) before merging.
 - `npm-ahead` means the clone is stale — releasing from it would regress. `just sync` first.
 - Dir ≠ npm name for some packages (`repos/fonts` = `@quartz-community/quartz-fonts`); the tools take dir or short names.
 - Quartz core (`@jackyzha0/quartz`) is not on npm, but is versioned with changesets since 5.1: add a
