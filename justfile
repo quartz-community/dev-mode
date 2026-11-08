@@ -302,6 +302,16 @@ deploy-changesets-dry:
 release-status *args:
     pnpm tsx scripts/release.ts status "$@"
 
+# Lockfile drift: versions each repo's package-lock.json pins (its own CI) vs what the workspace resolves (pnpm), major/minor only (--all, --ignore '@types/*', --strict)
+[positional-arguments]
+drift *args:
+    pnpm tsx scripts/release.ts drift "$@"
+
+# Latest CI result per workflow on every dev.yaml repo's tracked branch (read-only gh; --prs for open PR checks, --all, --json; exit 1 if a branch is failing)
+[positional-arguments]
+ci-status *args:
+    pnpm tsx scripts/ci-status.ts "$@"
+
 # Ordered release plan for a set of packages, incl. dependents that must follow (--bump patch|minor|major)
 [positional-arguments]
 release-plan +args:
