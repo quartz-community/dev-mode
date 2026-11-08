@@ -90,10 +90,20 @@ function generate(): void {
     }
   }
 
+  // Turbo does not resolve `^build` to these workspace dependencies either, so each package's
+  // build and typecheck name the builds they need. Without it a typecheck ran unordered: in
+  // `just check` (which builds for `test`) one could start while tsup was emptying a
+  // dependency's dist/ ("Cannot find module '@quartz-community/types'").
   for (const [pkgName, deps] of packageDeps) {
+    const needs = deps.map((d) => `${d}#build`);
     turboJson.tasks[`${pkgName}#build`] = {
-      dependsOn: deps.map((d) => `${d}#build`),
+      dependsOn: needs,
       outputs: ["dist/**", "*.tsbuildinfo"],
+      cache: false,
+    };
+    turboJson.tasks[`${pkgName}#typecheck`] = {
+      dependsOn: needs,
+      outputs: [],
       cache: false,
     };
   }
