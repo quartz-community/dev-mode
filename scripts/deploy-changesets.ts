@@ -10,6 +10,7 @@ import type { Manifest, RepoUpdateResult } from "./lib/types.js";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const REPOS_DIR = join(ROOT, "repos");
+// Mirrors the repos' ci.yml; see the note above RELEASE_WORKFLOW.
 const CI_TEMPLATE_PATH = join(ROOT, "scripts", "ci-template.yml");
 const CHANGESETS_CONFIG_TEMPLATE_PATH = join(
   ROOT,
@@ -18,7 +19,15 @@ const CHANGESETS_CONFIG_TEMPLATE_PATH = join(
 );
 
 const CHANGESETS_CLI_VERSION = "^2.29.2";
+const VERSION_PACKAGES_SCRIPT =
+  "changeset version && npm install --package-lock-only --ignore-scripts --no-audit --no-fund";
 
+// Templates mirror what the plugin repos run (note-properties origin/main, Nov 2026):
+// scripts/ci-template.yml = .github/workflows/ci.yml, RELEASE_WORKFLOW = release.yml.
+// Publishing uses npm trusted publishing (OIDC, Node 24, no NPM_TOKEN); keep them byte-identical
+// to the repos' files, since updateCiWorkflow/updateReleaseWorkflow rewrite any file that differs.
+// Not yet included: CI for changesets version PRs (they get none: GITHUB_TOKEN pushes trigger no
+// workflows). Prototype: quartz-community/note-properties branch dev-mode/version-pr-ci.
 const RELEASE_WORKFLOW = `name: Release
 
 on:
@@ -30,6 +39,10 @@ concurrency: \${{ github.workflow }}-\${{ github.ref }}
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Publishing uses npm trusted publishing: \`id-token: write\` lets the job mint the OIDC token
+    # npm exchanges for a short-lived publish credential, with provenance attached. No npm
+    # token is passed on purpose -- changesets/action writes one into \`.npmrc\` whenever
+    # NPM_TOKEN is set, and only falls back to OIDC when it is not.
     permissions:
       contents: write
       pull-requests: write
@@ -38,21 +51,20 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # Trusted publishing needs npm 11.5.1 or later, which Node 24 bundles (22 has npm 10).
+          node-version: 24
           registry-url: "https://registry.npmjs.org"
       - run: npm install
       - name: Create Release PR or Publish
         uses: changesets/action@v1
         with:
           publish: npm run release
+          version: npm run version-packages
           title: "chore: version package"
           commit: "chore: version package"
         env:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: \${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: \${{ secrets.NPM_TOKEN }}
 `;
-
 
 function stripPublishJob(template: string): string {
   const next = template.replace(/\n\n  publish:[\s\S]*$/, "\n");
@@ -77,6 +89,14 @@ function updatePackageJson(
   } else if (!(pkg.scripts as Record<string, unknown>).release) {
     (pkg.scripts as Record<string, unknown>).release =
       "npm run build && changeset publish";
+    changed = true;
+  }
+
+  // RELEASE_WORKFLOW runs `npm run version-packages`: version, then refresh the lockfile so the
+  // version PR doesn't leave package-lock.json behind package.json.
+  const scripts = pkg.scripts as Record<string, unknown>;
+  if (!scripts["version-packages"]) {
+    scripts["version-packages"] = VERSION_PACKAGES_SCRIPT;
     changed = true;
   }
 
@@ -213,7 +233,9 @@ async function main() {
   const filter = typeof flags.filter === "string" ? flags.filter : undefined;
 
   if (!existsSync(REPOS_DIR)) {
-    throw new Error("repos/ directory not found. Run 'just setup' to clone workspace packages");
+    throw new Error(
+      "repos/ directory not found. Run 'just setup' to clone workspace packages",
+    );
   }
 
   const manifest: Manifest = readManifest();
