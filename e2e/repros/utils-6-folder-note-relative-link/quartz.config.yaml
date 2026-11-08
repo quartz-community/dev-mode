@@ -1,0 +1,8 @@
+# Folder note notes/topic/Topic.md (slug notes/topic/index) linked by its own file name under
+# `relative` link resolution.
+extends: default
+configuration:
+  pageTitle: "Repro: utils-6-folder-note-relative-link"
+  baseUrl: localhost
+  links:
+    markdownLinkResolution: relative

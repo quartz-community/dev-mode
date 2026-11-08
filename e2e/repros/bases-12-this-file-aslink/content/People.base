@@ -1,0 +1,7 @@
+views:
+  - type: table
+    name: Mentions
+    filters:
+      or:
+        - file.links.contains(this.file.asLink())
+        - authors.contains(this.file.asLink())

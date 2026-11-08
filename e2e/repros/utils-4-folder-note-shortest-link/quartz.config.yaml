@@ -1,0 +1,6 @@
+# Folder note Area/Topic/Topic.md (slug area/topic/index) linked by its short name under the default
+# `shortest` link resolution.
+extends: default
+configuration:
+  pageTitle: "Repro: utils-4-folder-note-shortest-link"
+  baseUrl: localhost

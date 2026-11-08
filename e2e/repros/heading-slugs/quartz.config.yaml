@@ -1,0 +1,6 @@
+# Heading ids (github-flavored-markdown), heading links (crawl-links / core links, OFM wikilinks)
+# and TOC entries (table-of-contents) must all slug headings the same way.
+extends: default
+configuration:
+  pageTitle: "Repro: heading-slugs"
+  baseUrl: localhost
