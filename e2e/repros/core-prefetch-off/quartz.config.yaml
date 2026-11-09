@@ -1,0 +1,6 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-prefetch-off"
+  baseUrl: localhost
+  prefetch: "off"
+disable: [explorer, graph]

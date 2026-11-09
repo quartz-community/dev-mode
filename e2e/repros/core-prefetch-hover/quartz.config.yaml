@@ -1,0 +1,6 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-prefetch-hover"
+  baseUrl: localhost
+  prefetch: hover
+disable: [explorer, graph]
