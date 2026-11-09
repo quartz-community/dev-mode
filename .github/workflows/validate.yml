@@ -37,19 +37,43 @@ jobs:
       - name: Build
         run: pnpm turbo run build
 
+      # Build has built every package. The steps below run only their own task (--only): turbo's
+      # graph makes typecheck and test depend on build, and a rebuild starts by emptying dist/, so a
+      # failing task that cancels the others left packages without one (a syncer test failure
+      # emptied og-image's, and every repro after it failed to load og-image). They also keep
+      # going past failures (--continue=always) so one run reports every failing package; "Check
+      # results" at the end fails the job.
       - name: Type-check
-        run: pnpm turbo run typecheck
+        id: typecheck
+        continue-on-error: true
+        run: pnpm turbo run typecheck --only --continue=always
 
       - name: Test
         id: test
         continue-on-error: true
-        run: pnpm turbo run test --filter='!@quartz-themes/core'
+        run: pnpm turbo run test --only --continue=always --filter='!@quartz-themes/core'
 
       - name: Lint
-        run: pnpm turbo run lint
+        id: lint
+        continue-on-error: true
+        run: pnpm turbo run lint --continue=always
 
       - name: Validate workspace
         run: pnpm validate
+
+      # Every package whose entry point is in dist/ must still have one before sites are built.
+      - name: Check builds are intact
+        run: |
+          missing=""
+          for pkg in repos/*/package.json; do
+            dir=$(dirname "$pkg")
+            grep -q '"\./dist/\|"dist/' "$pkg" || continue
+            [ -n "$(ls -A "$dir/dist" 2>/dev/null)" ] || missing="$missing ${dir#repos/}"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::dist/ is missing or empty in:$missing"
+            exit 1
+          fi
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium --with-deps
@@ -67,8 +91,18 @@ jobs:
         env:
           CI: "true"
 
-      - name: Check test results
-        if: steps.test.outcome == 'failure'
+      - name: Check results
+        if: always()
+        env:
+          TYPECHECK: ${{ steps.typecheck.outcome }}
+          TEST: ${{ steps.test.outcome }}
+          LINT: ${{ steps.lint.outcome }}
         run: |
-          echo "::error::Test step failed — see 'Test' step above for details"
-          exit 1
+          failed=""
+          [ "$TYPECHECK" = failure ] && failed="$failed Type-check"
+          [ "$TEST" = failure ] && failed="$failed Test"
+          [ "$LINT" = failure ] && failed="$failed Lint"
+          if [ -n "$failed" ]; then
+            echo "::error::Failed:$failed (see those steps above)"
+            exit 1
+          fi
