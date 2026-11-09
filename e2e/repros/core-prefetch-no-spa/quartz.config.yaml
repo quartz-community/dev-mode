@@ -1,0 +1,6 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-prefetch-no-spa"
+  baseUrl: localhost
+  enableSPA: false
+disable: [explorer, graph]
