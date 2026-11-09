@@ -20,10 +20,13 @@ function readPackage(pkg) {
     if (!deps) continue;
 
     for (const [name, version] of Object.entries(deps)) {
+      // @quartz-themes/core is the plugin (repos/quartz-themes-core); the other @quartz-themes/*
+      // packages are the themes themselves (tokyo-night, catppuccin, …), published data packages
+      // that no repo here provides, so they resolve from npm
       const isWorkspace =
         name === "@jackyzha0/quartz" ||
         name.startsWith("@quartz-community/") ||
-        name.startsWith("@quartz-themes/");
+        name === "@quartz-themes/core";
       if (isWorkspace && typeof version === "string") {
         deps[name] = "workspace:*";
       }

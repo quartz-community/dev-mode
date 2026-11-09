@@ -1,4 +1,12 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  lstatSync,
+  mkdtempSync,
+  mkdirSync,
+  readlinkSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -10,6 +18,7 @@ import {
   loadConfig,
   pluginNameFromSource,
   type QuartzConfig,
+  ensureNodeModulesLink,
 } from "../scripts/lib/sandbox.js";
 import {
   basePathFromBaseUrl,
@@ -203,5 +212,53 @@ describe("repro templates", () => {
       "status: open",
     );
     expect(renderSpec({ slug: "x", title: "T" })).toContain("repro-fixture");
+  });
+});
+
+describe("ensureNodeModulesLink", () => {
+  const setup = () => {
+    const root = mkdtempSync(join(tmpdir(), "sandbox-nm-"));
+    const target = join(root, "workspace-node_modules");
+    mkdirSync(join(target, "@quartz-community", "utils"), { recursive: true });
+    return { root, target, link: join(root, "sandbox", "node_modules") };
+  };
+
+  it("creates the link when nothing is there", () => {
+    const { root, target, link } = setup();
+    mkdirSync(join(root, "sandbox"));
+    expect(ensureNodeModulesLink(link, target)).toBe("created");
+    expect(readlinkSync(link)).toBe(target);
+  });
+
+  it("keeps a link that already points at the workspace", () => {
+    const { root, target, link } = setup();
+    mkdirSync(join(root, "sandbox"));
+    symlinkSync(target, link, "dir");
+    expect(ensureNodeModulesLink(link, target)).toBe("kept");
+  });
+
+  // a theme plugin's `npm install` in the sandbox left a real node_modules with registry copies
+  it("replaces a real directory left by npm install, without touching the workspace", () => {
+    const { root, target, link } = setup();
+    mkdirSync(join(link, "@quartz-community", "utils"), { recursive: true });
+    writeFileSync(
+      join(link, "@quartz-community", "utils", "package.json"),
+      '{"version":"1.0.2"}',
+    );
+    expect(ensureNodeModulesLink(link, target)).toBe("replaced");
+    expect(lstatSync(link).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(link)).toBe(target);
+    expect(existsSync(join(target, "@quartz-community", "utils"))).toBe(true);
+  });
+
+  it("replaces a link that points somewhere else, leaving its target alone", () => {
+    const { root, target, link } = setup();
+    const elsewhere = join(root, "elsewhere");
+    mkdirSync(join(elsewhere, "pkg"), { recursive: true });
+    mkdirSync(join(root, "sandbox"));
+    symlinkSync(elsewhere, link, "dir");
+    expect(ensureNodeModulesLink(link, target)).toBe("replaced");
+    expect(readlinkSync(link)).toBe(target);
+    expect(existsSync(join(elsewhere, "pkg"))).toBe(true);
   });
 });

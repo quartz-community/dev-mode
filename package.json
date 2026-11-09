@@ -40,6 +40,8 @@
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",
+    "@quartz-themes/catppuccin": "^1.0.1",
+    "@quartz-themes/tokyo-night": "^1.0.1",
     "@types/semver": "^7.8.0",
     "esbuild": "^0.27.0",
     "github-slugger": "^2.0.0",
