@@ -1,0 +1,7 @@
+extends: default
+configuration:
+  pageTitle: "Repro: roam with OFM"
+  baseUrl: localhost
+plugins:
+  roam:
+    enabled: true
