@@ -22,6 +22,7 @@
 | Turn an issue into a failing test                         | `just repro-new <slug>` → `just repro-check <slug> --expect-fail` | `e2e/repros/<slug>/`                                                      |
 | What needs releasing, in what order                       | `just release-status` / `just release-plan <pkgs>`                | ordered steps, `[ASK]` = outward-facing                                   |
 | Is CI green on every repo's default branch?               | `just ci-status [repo…]` (`--prs` for open PRs' checks, `--all`)  | failing workflows + run URLs; exit 1 if any branch fails (read-only `gh`) |
+| How does real Obsidian (Bases) render/evaluate this? | `just obsidian-bases-probe <vault-dir>` (`--keep` + `eval --formulas '{…}'` for ad hoc formulas) | `.dev/obsidian-bases-probe/<name>/SUMMARY.md`, DOM, evaluated values, screenshots |
 | Does a repo's own CI test the same deps as the workspace? | `just drift [pkg…]` (also in `just release-status`)               | package-lock.json vs pnpm-lock.yaml major/minor differences               |
 | Add CI to changesets version PRs across repos             | `just version-pr-ci [repo…] [--dry-run]`                          | local branch per repo; `--push` = outward-facing                          |
 
