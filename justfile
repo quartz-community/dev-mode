@@ -262,13 +262,15 @@ commit repo msg:
     git -C "$r" commit -m "{{msg}}"
 
 # Commit specific files in a repo (stages ONLY the listed paths)
+[positional-arguments]
 commit-files repo msg +files:
     #!/usr/bin/env bash
     set -euo pipefail
-    [ -d "repos/{{repo}}/.git" ] || { echo "Not a git repo: repos/{{repo}}"; exit 1; }
-    git -C "repos/{{repo}}" diff --cached --quiet || { echo "Refusing to include pre-existing staged changes"; exit 1; }
-    git -C "repos/{{repo}}" add -- {{files}}
-    git -C "repos/{{repo}}" commit -m "{{msg}}" -- {{files}}
+    repo="$1" msg="$2"; shift 2  # the rest are paths, quoted as given (they may contain spaces)
+    [ -d "repos/$repo/.git" ] || { echo "Not a git repo: repos/$repo"; exit 1; }
+    git -C "repos/$repo" diff --cached --quiet || { echo "Refusing to include pre-existing staged changes"; exit 1; }
+    git -C "repos/$repo" add -- "$@"
+    git -C "repos/$repo" commit -m "$msg" -- "$@"
 
 # Push a single repo (does not touch other repos)
 push-repo repo: check
@@ -533,6 +535,11 @@ trace site="fixture:bug-repro" *args:
 [positional-arguments]
 inspect *args:
     pnpm tsx scripts/inspect.ts "$@"
+
+# Ask real Obsidian (Bases core plugin) how it renders a vault: <vault-dir> [--open f.base,n.md] [--lang de] [--tz UTC] [--keep [min]] | eval [--port 9339] '<js>'
+[positional-arguments]
+obsidian-bases-probe *args:
+    pnpm tsx scripts/obsidian-bases-probe/probe.ts "$@"
 
 # Visual regression: capture <label> | compare <a> <b> | baseline | check
 [positional-arguments]
