@@ -17,9 +17,11 @@ import { execFileSync, spawn } from "node:child_process";
 import {
   cpSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
+  readlinkSync,
   renameSync,
   rmSync,
   statSync,
@@ -28,6 +30,7 @@ import {
 } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { parse, stringify } from "yaml";
+import { logWarn } from "./log.js";
 
 export const WORKSPACE_ROOT = resolve(import.meta.dirname, "../..");
 export const REPOS_DIR = join(WORKSPACE_ROOT, "repos");
@@ -404,6 +407,34 @@ export function validateSandboxName(name: string): void {
   }
 }
 
+/**
+ * Make `linkPath` a symlink to `target` (the workspace's packages). A sandbox's node_modules must
+ * be that link: if anything else is there — a real directory left by an `npm install` run inside
+ * the sandbox (quartz-themes-core installs missing themes that way), or a link elsewhere — it is
+ * replaced, or every later build would keep importing those stale registry copies instead of the
+ * workspace packages (e.g. an old @quartz-community/utils missing a new export).
+ */
+export function ensureNodeModulesLink(
+  linkPath: string,
+  target: string,
+): "created" | "kept" | "replaced" {
+  let stat: ReturnType<typeof lstatSync> | undefined;
+  try {
+    stat = lstatSync(linkPath);
+  } catch {
+    stat = undefined;
+  }
+  if (
+    stat?.isSymbolicLink() &&
+    resolve(dirname(linkPath), readlinkSync(linkPath)) === target
+  ) {
+    return "kept";
+  }
+  if (stat) rmSync(linkPath, { recursive: true, force: true });
+  symlinkSync(target, linkPath, "dir");
+  return stat ? "replaced" : "created";
+}
+
 /** Create or refresh the sandbox directory for `name` and return its path. */
 export function prepareSandbox(name: string): string {
   validateSandboxName(name);
@@ -440,12 +471,16 @@ export function prepareSandbox(name: string): string {
   if (existsSync(cacheStash)) {
     renameSync(cacheStash, cache);
   }
-  if (!existsSync(join(dir, "node_modules"))) {
-    symlinkSync(
-      join(QUARTZ_DIR, "node_modules"),
-      join(dir, "node_modules"),
-      "dir",
-    );
+  const link = ensureNodeModulesLink(
+    join(dir, "node_modules"),
+    join(QUARTZ_DIR, "node_modules"),
+  );
+  if (link === "replaced") {
+    logWarn("sandbox-node-modules-replaced", {
+      sandbox: name,
+      reason:
+        "node_modules was not the link to repos/quartz/node_modules (e.g. a plugin ran `npm install` in the sandbox); it held registry packages instead of the workspace's",
+    });
   }
   // Quartz globs with `gitignore: true`. Without its own git root the sandbox
   // would inherit dev-mode's .gitignore (which ignores .dev/) and silently drop
