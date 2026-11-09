@@ -1,0 +1,8 @@
+filters:
+  and:
+    - file.ext == "md"
+views:
+  - type: table
+    name: Private view
+    order:
+      - file.name
