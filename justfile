@@ -249,9 +249,17 @@ restore-dist:
 
 # Commit all changes in a specific repo with a message (excludes dist/)
 commit repo msg:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    r="repos/{{repo}}"
     # Exclude dist/ only where it is tracked: excluding a gitignored dist/ makes `git add` fail.
-    if git -C repos/{{repo}} ls-files --error-unmatch dist >/dev/null 2>&1; then git -C repos/{{repo}} add --all -- . ':!dist/'; else git -C repos/{{repo}} add --all -- .; fi
-    git -C repos/{{repo}} commit -m "{{msg}}"
+    if git -C "$r" ls-files --error-unmatch dist >/dev/null 2>&1; then git -C "$r" add --all -- . ':!dist/'; else git -C "$r" add --all -- .; fi
+    # The workspace adds `.turbo/` to every repo's .gitignore locally; never commit that line alone.
+    if [ "$(git -C "$r" diff --cached --numstat -- .gitignore)" = "$(printf '1\t0\t.gitignore')" ] \
+      && git -C "$r" diff --cached -- .gitignore | grep -qx '+\.turbo/'; then
+      git -C "$r" restore --staged -- .gitignore
+    fi
+    git -C "$r" commit -m "{{msg}}"
 
 # Commit specific files in a repo (stages ONLY the listed paths)
 commit-files repo msg +files:
