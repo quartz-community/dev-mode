@@ -2,17 +2,19 @@
 title: "Repro: link facts as in Obsidian"
 issue: null
 plugins: [obsidian-flavored-markdown, rehype-obsidian, utils, quartz]
-status: fixed   # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Repro: link facts as in Obsidian
 
 ## Problem
+
 remark-obsidian 2.2.1's triage of another parser's oracle corpus handed five link facts to Quartz
 (rendering and link classification, not parsing). Re-probed on Obsidian 1.15.0 with
 `just obsidian-bases-probe e2e/repros/link-facts/obsidian-vault` (same note, numbered lines).
 
 ## Expected (asserted by repro.spec.ts)
+
 - `[x](%zz)`, `[x](a%E2.md)`: a path that is not valid percent-encoding is an external link.
   Quartz crashed the build (`URI malformed` in `transformInternalLink`).
 - `[x](../x:y)` is internal, `[x](x:y)` external (already so).
@@ -25,6 +27,7 @@ remark-obsidian 2.2.1's triage of another parser's oracle corpus handed five lin
   take the path as alt when the alias is empty or only a size (`![[pic.png|100]]` → `pic.png`).
 
 ## Fix
+
 - utils: `slugifyPath` NFC; `transformInternalLink` no longer throws; `linkPathDecodes`.
 - core `links.ts`: undecodable path → external; alt for an unresolved image without one.
 - rehype-obsidian: `a[data-wikilink]` text is never a block id. OFM marks wikilinks, removes the
