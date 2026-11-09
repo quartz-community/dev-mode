@@ -1,0 +1,10 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-has-backlinks-condition"
+  baseUrl: localhost
+plugins:
+  backlinks:
+    layout:
+      position: right
+      priority: 50
+      condition: has-backlinks

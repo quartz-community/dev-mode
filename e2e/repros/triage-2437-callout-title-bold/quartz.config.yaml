@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2437-callout-title-bold"
+  baseUrl: localhost

@@ -1,0 +1,7 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2595-mermaid-theme"
+  baseUrl: localhost
+# The real trigger is @quartz-themes/core (theme: default) whose CSS sets Quartz vars to
+# hsl(calc(...)) values. Enabling it here makes the theme npm-install into the sandbox, so the
+# spec injects the same variable values instead.

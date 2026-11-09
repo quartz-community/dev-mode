@@ -377,25 +377,25 @@ test.describe("Bug Reproductions", () => {
   });
 
   test.describe("OFM#2 — SVG wikilinks not resolved", () => {
-    test("embedded SVG via wikilink renders as image", async ({ page }) => {
+    test("embedded SVG via wikilink references the real file", async ({
+      page,
+    }) => {
       await page.goto(`${BASE}/features/svg-embed`);
 
-      const svgEmbed = await page.evaluate(() => {
-        const img = document.querySelector('img[src*="star"]');
-        const svg = document.querySelector("article svg");
-        const embed = document.querySelector(
-          '[src*="star.svg"], [data-src*="star.svg"]',
-        );
-        return {
-          hasImg: !!img,
-          hasSvg: !!svg,
-          hasEmbed: !!embed,
-          imgSrc: img?.getAttribute("src") || null,
-        };
-      });
+      // ![[star.svg]] must produce exactly one embed that points at star.svg —
+      // unrelated inline <svg> icons in the article must not satisfy this test.
+      const embed = page.locator(
+        'article object[data*="star.svg"], article img[src*="star.svg"]',
+      );
+      await expect(embed).toHaveCount(1);
+      const ref =
+        (await embed.getAttribute("data")) ?? (await embed.getAttribute("src"));
+      expect(ref).not.toBeNull();
 
-      const rendered = svgEmbed.hasImg || svgEmbed.hasSvg || svgEmbed.hasEmbed;
-      expect(rendered).toBe(true);
+      // …and the reference must resolve from this page (no page-relative 404).
+      const res = await page.request.get(new URL(ref!, page.url()).toString());
+      expect(res.status(), `embed reference "${ref}" should resolve`).toBe(200);
+      expect(await res.text()).toContain("<svg");
     });
   });
 

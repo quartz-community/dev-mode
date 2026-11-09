@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 
+// Only the local site counts: absolute production URLs (e.g. self-hosted fonts at
+// https://<baseUrl>/static/fonts/…) are not served by the test server.
+const isLocal = (url: string) =>
+  /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/)/.test(url);
+
 const BASE = "/Obsidian-TTRPG-Quartz";
 
 test.describe("Nested Base URL / SPA Navigation (#2420, #2462)", () => {
@@ -37,7 +42,8 @@ test.describe("Nested Base URL / SPA Navigation (#2420, #2462)", () => {
   }) => {
     const responses404: string[] = [];
     page.on("response", (res) => {
-      if (res.status() === 404) responses404.push(res.url());
+      if (res.status() === 404 && isLocal(res.url()))
+        responses404.push(res.url());
     });
 
     await page.goto(`${BASE}/docs/getting-started`);
@@ -49,7 +55,7 @@ test.describe("Nested Base URL / SPA Navigation (#2420, #2462)", () => {
       .click();
     await page.waitForURL(`**${BASE}/features/callouts`);
 
-    await expect(page.locator("h1")).toContainText("Callouts");
+    await expect(page.locator("h1.article-title")).toContainText("Callouts");
     expect(responses404).toEqual([]);
   });
 
@@ -112,7 +118,8 @@ test.describe("Nested Base URL / SPA Navigation (#2420, #2462)", () => {
   test("no 404 responses during SPA navigation chain", async ({ page }) => {
     const responses404: string[] = [];
     page.on("response", (res) => {
-      if (res.status() === 404) responses404.push(res.url());
+      if (res.status() === 404 && isLocal(res.url()))
+        responses404.push(res.url());
     });
 
     await page.goto(`${BASE}/`);

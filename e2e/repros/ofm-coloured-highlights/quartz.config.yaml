@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: ofm-coloured-highlights"
+  baseUrl: localhost

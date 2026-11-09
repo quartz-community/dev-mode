@@ -1,14 +1,16 @@
 import { defineConfig } from "@playwright/test";
+import { chromiumLaunchOptions } from "../scripts/lib/browser.js";
 
 export default defineConfig({
   testDir: "./tests",
+  outputDir: "../.dev/test-results/e2e",
   timeout: 30_000,
   retries: process.env.CI ? 2 : 0,
   use: {
     trace: "on-first-retry",
-    launchOptions: {
-      executablePath: process.env.CHROME_BIN || undefined,
-    },
+    // Probes CHROME_BIN and common Nix/system paths for a Chromium that
+    // actually launches (see scripts/lib/browser.ts).
+    launchOptions: chromiumLaunchOptions(),
   },
   webServer: [
     {

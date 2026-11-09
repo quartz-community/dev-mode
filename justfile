@@ -4,9 +4,14 @@ set dotenv-load := false
 default:
     @just --list
 
+# One-screen orientation: toolchain, browser, dirty repos, stale dist/, generated artifacts
+[positional-arguments]
+overview *args:
+    @pnpm tsx scripts/overview.ts "$@"
+
 # --- Setup & Teardown ---
 
-# Verify development prerequisites (Node 22+, pnpm 10+, git)
+# Verify development prerequisites (Node per .node-version, pnpm 10+, git)
 check-env:
     @pnpm tsx scripts/check-env.ts
 
@@ -50,17 +55,26 @@ doctor:
 build:
     pnpm turbo run build
 
-# Build only packages affected by recent changes
+# List packages with local changes (uncommitted source edits or unpushed commits)
+[positional-arguments]
+changed *args:
+    @pnpm tsx scripts/changed.ts "$@"
+
+# Build packages with local changes + their dependents (turbo --affected is blind here: repos/ is git-ignored at the root)
 build-affected:
-    pnpm turbo run build --affected
+    pnpm tsx scripts/changed.ts run build
+
+# Test packages with local changes + their dependents
+test-affected:
+    pnpm tsx scripts/changed.ts run test
 
 # Type-check all packages
 typecheck:
     pnpm turbo run typecheck
 
-# Type-check only affected packages
+# Type-check packages with local changes + their dependents
 typecheck-affected:
-    pnpm turbo run typecheck --affected
+    pnpm tsx scripts/changed.ts run typecheck
 
 # Run unit tests for workspace scripts
 test-unit:
@@ -235,17 +249,28 @@ restore-dist:
 
 # Commit all changes in a specific repo with a message (excludes dist/)
 commit repo msg:
-    git -C repos/{{repo}} add --all --ignore-errors -- . ':!dist/'
-    git -C repos/{{repo}} commit -m "{{msg}}"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    r="repos/{{repo}}"
+    # Exclude dist/ only where it is tracked: excluding a gitignored dist/ makes `git add` fail.
+    if git -C "$r" ls-files --error-unmatch dist >/dev/null 2>&1; then git -C "$r" add --all -- . ':!dist/'; else git -C "$r" add --all -- .; fi
+    # The workspace adds `.turbo/` to every repo's .gitignore locally; never commit that line alone.
+    if [ "$(git -C "$r" diff --cached --numstat -- .gitignore)" = "$(printf '1\t0\t.gitignore')" ] \
+      && git -C "$r" diff --cached -- .gitignore | grep -qx '+\.turbo/'; then
+      git -C "$r" restore --staged -- .gitignore
+    fi
+    git -C "$r" commit -m "{{msg}}"
 
 # Commit specific files in a repo (stages ONLY the listed paths)
+[positional-arguments]
 commit-files repo msg +files:
     #!/usr/bin/env bash
     set -euo pipefail
-    [ -d "repos/{{repo}}/.git" ] || { echo "Not a git repo: repos/{{repo}}"; exit 1; }
-    git -C "repos/{{repo}}" diff --cached --quiet || { echo "Refusing to include pre-existing staged changes"; exit 1; }
-    git -C "repos/{{repo}}" add -- {{files}}
-    git -C "repos/{{repo}}" commit -m "{{msg}}" -- {{files}}
+    repo="$1" msg="$2"; shift 2  # the rest are paths, quoted as given (they may contain spaces)
+    [ -d "repos/$repo/.git" ] || { echo "Not a git repo: repos/$repo"; exit 1; }
+    git -C "repos/$repo" diff --cached --quiet || { echo "Refusing to include pre-existing staged changes"; exit 1; }
+    git -C "repos/$repo" add -- "$@"
+    git -C "repos/$repo" commit -m "$msg" -- "$@"
 
 # Push a single repo (does not touch other repos)
 push-repo repo: check
@@ -279,6 +304,42 @@ deploy-changesets:
 
 deploy-changesets-dry:
     pnpm tsx scripts/deploy-changesets.ts --dry-run
+
+# --- Releases (local prep only; pushing/merging/publishing stays manual) ---
+
+# What needs releasing across the ecosystem (versions vs npm, changesets, unpushed, lockfile)
+[positional-arguments]
+release-status *args:
+    pnpm tsx scripts/release.ts status "$@"
+
+# Lockfile drift: versions each repo's package-lock.json pins (its own CI) vs what the workspace resolves (pnpm), major/minor only (--all, --ignore '@types/*', --strict)
+[positional-arguments]
+drift *args:
+    pnpm tsx scripts/release.ts drift "$@"
+
+# Latest CI result per workflow on every dev.yaml repo's tracked branch (read-only gh; --prs for open PR checks, --all, --json; exit 1 if a branch is failing)
+[positional-arguments]
+ci-status *args:
+    pnpm tsx scripts/ci-status.ts "$@"
+
+# CI for changesets version PRs: local dev-mode/version-pr-ci branch per repo (--dry-run, --push opens PRs)
+version-pr-ci *args:
+    pnpm tsx scripts/version-pr-ci.ts {{args}}
+
+# Ordered release plan for a set of packages, incl. dependents that must follow (--bump patch|minor|major)
+[positional-arguments]
+release-plan +args:
+    pnpm tsx scripts/release.ts plan "$@"
+
+# Write the same changeset into several repos: --bump patch --summary "..." <pkg...>
+[positional-arguments]
+release-changeset +args:
+    pnpm tsx scripts/release.ts changeset "$@"
+
+# Pre-flight a release set: build/typecheck/lint/format/test for packages + dependents
+[positional-arguments]
+release-verify +args:
+    pnpm tsx scripts/release.ts verify "$@"
 
 # Tag all repos with their current version to trigger CI publish (infrastructure first, then plugins)
 publish-tags:
@@ -392,6 +453,10 @@ update-quartz-lockfile:
     git -C repos/quartz commit -m "chore: update lockfile for latest plugin releases"
     echo "Committed. Run 'just push' to push."
 
+# Remove all generated dev-mode scratch output (.dev/: sandboxes, sites, catalog, visual, traces, logs)
+clean-dev:
+    rm -rf .dev
+
 # Clean turbo cache
 clean-cache:
     rm -rf .turbo repos/*/.turbo
@@ -402,18 +467,117 @@ graph:
 
 # --- E2E Tests ---
 
-# Build E2E test fixtures
-e2e-build fixture="base-url-site":
-    pnpm tsx e2e/helpers/build-fixture.ts {{fixture}}
+# Build E2E fixtures in isolated sandboxes (default: all, in parallel)
+e2e-build +fixtures="all":
+    pnpm tsx e2e/helpers/build-fixture.ts {{fixtures}}
 
-# Run E2E tests (requires fixtures to be built first)
-e2e-test:
-    pnpm exec playwright test --config e2e/playwright.config.ts
+# Run E2E tests (requires fixtures to be built first); extra args go to playwright
+[positional-arguments]
+e2e-test *args:
+    pnpm exec playwright test --config e2e/playwright.config.ts "$@"
 
-# Full E2E: build fixtures + run tests
-e2e fixture="base-url-site": (e2e-build fixture)
+# Full E2E: build all fixtures + run tests + run repros
+e2e: (e2e-build "all")
     @just e2e-test
+    @just repro-test
 
 # Install Playwright browser binaries (not needed if using Nix)
 install-browsers:
     pnpm exec playwright install chromium
+
+# Show which Chromium binary E2E tooling will use (and why)
+which-browser:
+    @pnpm tsx -e "import('./scripts/lib/browser.ts').then(m => console.log(JSON.stringify(m.resolveChromium(), null, 2)))"
+
+# --- Sites (isolated sandboxes; never touch repos/quartz) ---
+# <target>: fixture:<name> | repro:<slug> | docs | <dir>   (just site-targets)
+
+# List buildable site targets (fixtures and repros)
+site-targets:
+    pnpm tsx scripts/site.ts targets
+
+# Build a site target into .dev/sites/<id> (warns about stale plugin dist/)
+[positional-arguments]
+site-build target *args:
+    pnpm tsx scripts/site.ts build "$@"
+
+# Build and serve a site target statically (production-like, honours base path)
+[positional-arguments]
+site-serve target *args:
+    pnpm tsx scripts/site.ts serve "$@"
+
+# Quartz live-reload server for a site target, in a sandbox
+[positional-arguments]
+site-dev target *args:
+    pnpm tsx scripts/site.ts dev "$@"
+
+# Whole-site smoke test: broken links/assets, console + page errors, SPA errors, mobile overflow
+[positional-arguments]
+site-smoke target *args:
+    pnpm tsx scripts/smoke.ts "$@"
+
+# Print the fully resolved quartz.config.yaml for a target (after overlays)
+[positional-arguments]
+site-config target *args:
+    pnpm tsx scripts/site.ts config "$@"
+
+# Plugin catalog: build | show <pkg> | who-writes <key> | who-reads <key> | impact <pkg> | dom <class> | search <text>
+[positional-arguments]
+catalog *args:
+    pnpm tsx scripts/catalog.ts "$@"
+
+# Runtime data-flow trace of a real build: who reads/writes which file.data key (prototype)
+[positional-arguments]
+trace site="fixture:bug-repro" *args:
+    pnpm tsx scripts/trace.ts --site "$@"
+
+# Inspect rendered page(s): errors, layout map, computed styles, screenshot (--screenshot, --selector, --viewport mobile, --theme dark)
+[positional-arguments]
+inspect *args:
+    pnpm tsx scripts/inspect.ts "$@"
+
+# Ask real Obsidian (Bases core plugin) how it renders a vault: <vault-dir> [--open f.base,n.md] [--lang de] [--tz UTC] [--keep [min]] | eval [--port 9339] '<js>'
+[positional-arguments]
+obsidian-bases-probe *args:
+    pnpm tsx scripts/obsidian-bases-probe/probe.ts "$@"
+
+# Visual regression: capture <label> | compare <a> <b> | baseline | check
+[positional-arguments]
+visual *args:
+    pnpm tsx scripts/visual.ts "$@"
+
+# Capture the "base" visual snapshot (screenshots + computed styles) before a CSS/UI change
+[positional-arguments]
+visual-baseline *args:
+    pnpm tsx scripts/visual.ts baseline "$@"
+
+# Capture "head" and compare against "base": pixel diff + text style diff report (exit 1 on change)
+[positional-arguments]
+visual-check *args:
+    pnpm tsx scripts/visual.ts check "$@"
+
+# --- Repros (e2e/repros/<slug>: content + config overlay + Playwright spec) ---
+
+# Scaffold a new repro (e.g. just repro-new 2490-mermaid-spa --issue jackyzha0/quartz#2490 --plugin graph)
+[positional-arguments]
+repro-new slug *args:
+    pnpm tsx scripts/repro.ts new "$@"
+
+# List repros with status
+repro-list:
+    pnpm tsx scripts/repro.ts list
+
+# Build a repro site
+[positional-arguments]
+repro-build slug *args:
+    pnpm tsx scripts/repro.ts build "$@"
+
+# Run repro specs (all, or one slug)
+[positional-arguments]
+repro-test slug="" *args:
+    pnpm tsx scripts/repro.ts test "$@"
+
+# Build + test one repro; add --expect-fail to confirm it reproduces the bug
+[positional-arguments]
+repro-check slug *args:
+    pnpm tsx scripts/repro.ts check "$@"

@@ -1,0 +1,23 @@
+filters:
+  and:
+    - 'file.name == "probe"'
+formulas:
+  shown: 'date("2024-03-05")'
+  shown_dt: 'date("2024-03-05 14:30:00")'
+  dmy: 'date(s_dmy)'
+  long: 'd.format("LL")'
+  weekday: 'd.format("dddd")'
+  plus: 'd + "1d"'
+views:
+  - type: table
+    name: dates
+    order:
+      - file.name
+      - note.d
+      - note.dt
+      - formula.shown
+      - formula.shown_dt
+      - formula.dmy
+      - formula.long
+      - formula.weekday
+      - formula.plus

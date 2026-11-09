@@ -1,0 +1,12 @@
+# Overlay on top of a base config — keep it to what the repro needs.
+# See scripts/lib/sandbox.ts (ConfigOverlay) for all keys.
+extends: default
+configuration:
+  pageTitle: "Repro: ofm-pele-diagrams"
+  # A base path, so the plugin-asset URLs are resolved relative to it.
+  baseUrl: localhost/pele-site
+plugins:
+  obsidian-flavored-markdown:
+    enabled: true
+    options:
+      diagramRenderer: pele

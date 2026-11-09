@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2515-toc-blockquote"
+  baseUrl: localhost

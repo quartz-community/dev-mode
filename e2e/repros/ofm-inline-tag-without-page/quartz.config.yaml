@@ -1,0 +1,5 @@
+extends: default
+disable: [tag-page]
+configuration:
+  pageTitle: "Repro: ofm-inline-tag-without-page"
+  baseUrl: localhost

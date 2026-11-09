@@ -1,3 +1,5 @@
+# Deliberately keeps the pre-5.1 entries for crawl-links / content-index so the e2e suite
+# covers the automatic migration of plugins that are now built into core.
 configuration:
   pageTitle: Bug Repro Site
   enableSPA: true
@@ -146,6 +148,9 @@ plugins:
     layout:
       position: left
       priority: 40
+      # On mobile the left sidebar collapses into one horizontal toolbar row
+      # (title, search, darkmode, explorer menu); list components belong elsewhere.
+      display: desktop-only
   - source: "@quartz-community/bases-page"
     enabled: true
   - source: "@quartz-community/footer"

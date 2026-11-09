@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { safeReadJson } from "./lib/json.js";
 import { TIMEOUTS } from "./lib/exec.js";
@@ -34,7 +34,6 @@ function readPackageJson(dir: string): PackageJson | null {
   return readJson<PackageJson>(pkgPath);
 }
 
-
 function runCommand(command: string): { output: string; error?: string } {
   try {
     const output = execSync(command, {
@@ -51,10 +50,17 @@ function runCommand(command: string): { output: string; error?: string } {
   }
 }
 
+function standaloneRepos(): string[] {
+  return readManifest()
+    .plugins.filter((p) => p.standalone)
+    .map((p) => p.name);
+}
+
 function getWorkspacePackages(): Array<{ dir: string; pkg: PackageJson }> {
   if (!existsSync(REPOS_DIR)) return [];
+  const standalone = new Set(standaloneRepos());
   return readdirSync(REPOS_DIR, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
+    .filter((entry) => entry.isDirectory() && !standalone.has(entry.name))
     .map((entry) => ({
       dir: join(REPOS_DIR, entry.name),
       pkg: readPackageJson(join(REPOS_DIR, entry.name)) ?? {},
@@ -167,6 +173,21 @@ function checkEngines(
   return { name: "Engines", ok, details };
 }
 
+/** Standalone repos (dev.yaml `standalone: true`) must be excluded from the pnpm workspace. */
+function checkStandalone(): CheckResult {
+  const workspaceYaml = readFileSync(
+    join(ROOT, "pnpm-workspace.yaml"),
+    "utf-8",
+  );
+  const details = standaloneRepos()
+    .filter((name) => !workspaceYaml.includes(`"!repos/${name}"`))
+    .map(
+      (name) =>
+        `${name} is standalone but not excluded: add "!repos/${name}" to pnpm-workspace.yaml packages`,
+    );
+  return { name: "Standalone repos", ok: details.length === 0, details };
+}
+
 function formatResults(results: CheckResult[], asJson: boolean): void {
   const overall = results.every((result) => result.ok);
   if (asJson) {
@@ -200,7 +221,9 @@ function main(): void {
 
   const workspacePackages = getWorkspacePackages();
   if (workspacePackages.length === 0) {
-    console.error("No workspace packages found in repos/. Run 'just setup' to clone workspace packages.");
+    console.error(
+      "No workspace packages found in repos/. Run 'just setup' to clone workspace packages.",
+    );
     process.exit(1);
   }
 
@@ -209,6 +232,7 @@ function main(): void {
     checkOverrides(workspacePackages),
     checkManifests(workspacePackages),
     checkEngines(workspacePackages),
+    checkStandalone(),
   ];
 
   formatResults(results, asJson);

@@ -1,0 +1,12 @@
+# quartz-community/bases-page#11: .base / .canvas / Excalidraw files must follow the site's publish
+# filters (explicit-publish) and encryption (encrypted-pages) like notes do.
+extends: default
+configuration:
+  pageTitle: "Repro: bases-11-publish-filters"
+  baseUrl: localhost
+enable: [explicit-publish]
+plugins:
+  obsidian-plugin-excalidraw:
+    # not a Quartz dependency: load the workspace clone as a local plugin
+    source: "../../../repos/obsidian-plugin-excalidraw"
+    enabled: true

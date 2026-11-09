@@ -1,0 +1,21 @@
+# Overlay on top of a base config — keep it to what the repro needs.
+# See scripts/lib/sandbox.ts (ConfigOverlay) for all keys.
+extends: default
+configuration:
+  pageTitle: "Repro: bases-virtual-file-pages"
+  # Serve at the site root. Use e.g. localhost/sub to reproduce base-path bugs.
+  baseUrl: localhost
+# only: [obsidian-flavored-markdown, content-page]   # enable ONLY these
+# enable: [graph]
+# disable: [explorer]
+plugins:
+  bases-page:
+    enabled: true
+    options: {}
+  canvas-page:
+    enabled: true
+  obsidian-plugin-excalidraw:
+    # not a Quartz dependency, so not in repos/quartz/node_modules: load the workspace clone as a
+    # local plugin (Quartz resolves the path from .dev/sandboxes/<name>)
+    source: "../../../repos/obsidian-plugin-excalidraw"
+    enabled: true

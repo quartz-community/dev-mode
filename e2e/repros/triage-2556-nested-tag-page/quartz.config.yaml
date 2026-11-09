@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2556-nested-tag-page"
+  baseUrl: localhost

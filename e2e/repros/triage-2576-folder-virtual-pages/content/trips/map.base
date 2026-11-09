@@ -1,0 +1,6 @@
+filters:
+  and:
+    - trip == true
+views:
+  - type: table
+    name: Trips

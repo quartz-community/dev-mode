@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2507-typography-ignored"
+  baseUrl: localhost
+  theme:
+    typography:
+      header: Lora
+      body: Lora
+      code: Fira Code

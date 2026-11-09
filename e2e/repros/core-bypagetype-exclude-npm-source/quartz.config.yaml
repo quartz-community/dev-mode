@@ -1,0 +1,6 @@
+# The default config ships `layout.byPageType.{folder,tag}.exclude: [reader-mode]`
+# while plugin sources are npm specifiers ("@quartz-community/reader-mode").
+extends: default
+configuration:
+  pageTitle: "Repro: core-bypagetype-exclude-npm-source"
+  baseUrl: localhost

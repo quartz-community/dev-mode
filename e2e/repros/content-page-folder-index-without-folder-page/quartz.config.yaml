@@ -1,0 +1,5 @@
+extends: default
+disable: [folder-page]
+configuration:
+  pageTitle: "Repro: content-page-folder-index-without-folder-page"
+  baseUrl: localhost

@@ -1,0 +1,5 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-spa-redirect-base"
+  # a base path, so relative links resolved against the wrong base point outside the site
+  baseUrl: localhost/spa-base

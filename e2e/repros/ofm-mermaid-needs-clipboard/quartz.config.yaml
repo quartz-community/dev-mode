@@ -1,0 +1,6 @@
+extends: default
+configuration:
+  pageTitle: "Repro: ofm-mermaid-needs-clipboard"
+  baseUrl: localhost
+# The trigger: no syntax-highlighting → no .clipboard-button in code blocks.
+disable: [syntax-highlighting]

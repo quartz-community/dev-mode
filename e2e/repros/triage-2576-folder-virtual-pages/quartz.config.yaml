@@ -1,0 +1,10 @@
+# Overlay on top of a base config — keep it to what the repro needs.
+# See scripts/lib/sandbox.ts (ConfigOverlay) for all keys.
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2576-folder-virtual-pages"
+  # Serve at the site root. Use e.g. localhost/sub to reproduce base-path bugs.
+  baseUrl: localhost
+# only: [obsidian-flavored-markdown, content-page]   # enable ONLY these
+# enable: [graph]
+# disable: [explorer]
