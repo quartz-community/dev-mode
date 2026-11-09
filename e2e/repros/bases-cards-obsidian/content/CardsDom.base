@@ -1,0 +1,45 @@
+filters:
+  and:
+    - 'file.name.startsWith("c-")'
+views:
+  - type: cards
+    name: no-props
+    order: []
+    image: note.cover
+  - type: cards
+    name: name-only
+    order:
+      - file.name
+    image: note.cover
+  - type: cards
+    name: with-props
+    order:
+      - file.name
+      - note.rating
+      - note.related
+      - note.site
+      - note.multi
+      - note.plain
+      - file.tags
+    image: note.cover
+  - type: cards
+    name: props-no-image
+    order:
+      - file.name
+      - note.related
+      - note.site
+  - type: list
+    name: list-props
+    order:
+      - file.name
+      - note.related
+      - note.site
+      - note.multi
+  - type: table
+    name: table-props
+    order:
+      - file.name
+      - note.cover
+      - note.related
+      - note.site
+      - note.multi

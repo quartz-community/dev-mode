@@ -1,0 +1,60 @@
+filters:
+  and:
+    - 'file.name.startsWith("c-")'
+views:
+  - type: cards
+    name: ratio-0.5
+    order:
+      - file.name
+    image: note.cover
+    imageAspectRatio: 0.5
+    cardSize: 200
+  - type: cards
+    name: ratio-0.8
+    order:
+      - file.name
+    image: note.cover
+    imageAspectRatio: 0.8
+    cardSize: 200
+  - type: cards
+    name: ratio-1
+    order:
+      - file.name
+    image: note.cover
+    imageAspectRatio: 1
+    cardSize: 200
+  - type: cards
+    name: ratio-1.25
+    order:
+      - file.name
+    image: note.cover
+    imageAspectRatio: 1.25
+    cardSize: 200
+  - type: cards
+    name: ratio-1.5
+    order:
+      - file.name
+    image: note.cover
+    imageAspectRatio: 1.5
+    cardSize: 200
+  - type: cards
+    name: ratio-2
+    order:
+      - file.name
+    image: note.cover
+    imageAspectRatio: 2
+    cardSize: 200
+  - type: cards
+    name: ratio-1.5-contain
+    order:
+      - file.name
+    image: note.cover
+    imageFit: contain
+    imageAspectRatio: 1.5
+    cardSize: 200
+  - type: cards
+    name: no-ratio-key
+    order:
+      - file.name
+    image: note.cover
+    cardSize: 200

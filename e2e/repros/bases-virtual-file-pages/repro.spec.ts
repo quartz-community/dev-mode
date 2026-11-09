@@ -29,9 +29,15 @@ test.describe("canvas and Excalidraw files in base views", () => {
   }) => {
     await page.goto(site.url(""));
     expect(await rows(page, 0)).toEqual([
-      ["Diagram", "boards/Diagram.excalidraw", "excalidraw", "boards"],
+      // as in Obsidian, file.name keeps the extension of non-Markdown files
+      [
+        "Diagram.excalidraw",
+        "boards/Diagram.excalidraw",
+        "excalidraw",
+        "boards",
+      ],
       ["Note", "boards/Note.md", "md", "boards"],
-      ["Plan", "boards/Plan.canvas", "canvas", "boards"],
+      ["Plan.canvas", "boards/Plan.canvas", "canvas", "boards"],
       ["Sketch.excalidraw", "boards/Sketch.excalidraw.md", "md", "boards"],
     ]);
     expect(pageProblems.all()).toEqual([]);
@@ -42,7 +48,9 @@ test.describe("canvas and Excalidraw files in base views", () => {
     site,
   }) => {
     await page.goto(site.url(""));
-    expect(await rows(page, 1)).toEqual([["Plan", "boards/Plan.canvas"]]);
+    expect(await rows(page, 1)).toEqual([
+      ["Plan.canvas", "boards/Plan.canvas"],
+    ]);
   });
 
   test("the rows link to the rendered canvas and drawing pages", async ({
