@@ -320,6 +320,10 @@ drift *args:
 ci-status *args:
     pnpm tsx scripts/ci-status.ts "$@"
 
+# CI for changesets version PRs: local dev-mode/version-pr-ci branch per repo (--dry-run, --push opens PRs)
+version-pr-ci *args:
+    pnpm tsx scripts/version-pr-ci.ts {{args}}
+
 # Ordered release plan for a set of packages, incl. dependents that must follow (--bump patch|minor|major)
 [positional-arguments]
 release-plan +args:

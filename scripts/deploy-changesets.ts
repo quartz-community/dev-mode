@@ -26,8 +26,10 @@ const VERSION_PACKAGES_SCRIPT =
 // scripts/ci-template.yml = .github/workflows/ci.yml, RELEASE_WORKFLOW = release.yml.
 // Publishing uses npm trusted publishing (OIDC, Node 24, no NPM_TOKEN); keep them byte-identical
 // to the repos' files, since updateCiWorkflow/updateReleaseWorkflow rewrite any file that differs.
-// Not yet included: CI for changesets version PRs (they get none: GITHUB_TOKEN pushes trigger no
-// workflows). Prototype: quartz-community/note-properties branch dev-mode/version-pr-ci.
+// Not included: CI for changesets version PRs (they get none: GITHUB_TOKEN pushes trigger no
+// workflows). `just version-pr-ci` patches it into each repo's own workflows instead.
+// Caution: release.yml is rewritten to trusted publishing; a repo still publishing with NPM_TOKEN
+// needs a trusted publisher configured on npmjs.com first, or its next publish fails.
 const RELEASE_WORKFLOW = `name: Release
 
 on:

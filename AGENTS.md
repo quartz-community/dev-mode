@@ -8,21 +8,22 @@
 
 ### Agent Toolkit
 
-| Need | Command | Output |
-|---|---|---|
-| What a plugin does / provides / consumes | `just catalog show <plugin>` | card (also `.dev/catalog/CATALOG.md`) |
-| Who writes / reads `file.data.<key>` | `just catalog who-writes <key>` / `who-reads <key>` | `.dev/catalog/DATA-FLOW.md` |
-| Runtime truth of the above for a real build | `just trace fixture:bug-repro` | `.dev/trace/<name>/TRACE.md` (prototype) |
-| Blast radius of a change | `just catalog impact <package>` | dependents, fixtures, specs, commands to run |
-| Which plugin renders/styles a DOM class | `just catalog dom <class>` | |
-| Build a site without touching `repos/quartz` | `just site-build <target>` | `.dev/sites/<id>`, stale-dist warnings |
-| Look at a rendered page | `just inspect <target> <page> --screenshot` | errors, layout map, computed styles, PNG |
-| Health-check a whole site | `just site-smoke <target>` | broken links/assets, console/page/SPA errors, mobile overflow |
-| Did a CSS change break anything? | `just visual-baseline` → edit → `just visual-check` | pixel + computed-style diff report |
-| Turn an issue into a failing test | `just repro-new <slug>` → `just repro-check <slug> --expect-fail` | `e2e/repros/<slug>/` |
-| What needs releasing, in what order | `just release-status` / `just release-plan <pkgs>` | ordered steps, `[ASK]` = outward-facing |
-| Is CI green on every repo's default branch? | `just ci-status [repo…]` (`--prs` for open PRs' checks, `--all`) | failing workflows + run URLs; exit 1 if any branch fails (read-only `gh`) |
-| Does a repo's own CI test the same deps as the workspace? | `just drift [pkg…]` (also in `just release-status`) | package-lock.json vs pnpm-lock.yaml major/minor differences |
+| Need                                                      | Command                                                           | Output                                                                    |
+| --------------------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| What a plugin does / provides / consumes                  | `just catalog show <plugin>`                                      | card (also `.dev/catalog/CATALOG.md`)                                     |
+| Who writes / reads `file.data.<key>`                      | `just catalog who-writes <key>` / `who-reads <key>`               | `.dev/catalog/DATA-FLOW.md`                                               |
+| Runtime truth of the above for a real build               | `just trace fixture:bug-repro`                                    | `.dev/trace/<name>/TRACE.md` (prototype)                                  |
+| Blast radius of a change                                  | `just catalog impact <package>`                                   | dependents, fixtures, specs, commands to run                              |
+| Which plugin renders/styles a DOM class                   | `just catalog dom <class>`                                        |                                                                           |
+| Build a site without touching `repos/quartz`              | `just site-build <target>`                                        | `.dev/sites/<id>`, stale-dist warnings                                    |
+| Look at a rendered page                                   | `just inspect <target> <page> --screenshot`                       | errors, layout map, computed styles, PNG                                  |
+| Health-check a whole site                                 | `just site-smoke <target>`                                        | broken links/assets, console/page/SPA errors, mobile overflow             |
+| Did a CSS change break anything?                          | `just visual-baseline` → edit → `just visual-check`               | pixel + computed-style diff report                                        |
+| Turn an issue into a failing test                         | `just repro-new <slug>` → `just repro-check <slug> --expect-fail` | `e2e/repros/<slug>/`                                                      |
+| What needs releasing, in what order                       | `just release-status` / `just release-plan <pkgs>`                | ordered steps, `[ASK]` = outward-facing                                   |
+| Is CI green on every repo's default branch?               | `just ci-status [repo…]` (`--prs` for open PRs' checks, `--all`)  | failing workflows + run URLs; exit 1 if any branch fails (read-only `gh`) |
+| Does a repo's own CI test the same deps as the workspace? | `just drift [pkg…]` (also in `just release-status`)               | package-lock.json vs pnpm-lock.yaml major/minor differences               |
+| Add CI to changesets version PRs across repos             | `just version-pr-ci [repo…] [--dry-run]`                          | local branch per repo; `--push` = outward-facing                          |
 
 `<target>` = `fixture:<name>` · `repro:<slug>` · `docs` · a directory with `content/` (+ optional `quartz.config.yaml`). List: `just site-targets`.
 Most commands accept `--json`. All generated output goes to `.dev/` (gitignored).
@@ -52,13 +53,13 @@ This workspace unifies the Quartz v5 ecosystem into a single pnpm monorepo for c
 
 ### Package Categories
 
-| Category | Location in `dev.yaml` | Cloned | Purpose |
-|---|---|---|---|
-| **Core** | `core:` | Always | Quartz site generator (`@jackyzha0/quartz`) |
-| **Infrastructure** | `infrastructure:` | Always | Shared types, utilities, runtime, markdown processors |
-| **Themes** | `themes:` | Always | Visual themes (`@quartz-themes/core`) |
-| **Plugins** | `plugins:` | By preset | Feature packages (search, graph, explorer, etc.) |
-| **Tools** | `tools:` | Always | Ecosystem tools that consume the above (Quartz Syncer) |
+| Category           | Location in `dev.yaml` | Cloned    | Purpose                                                |
+| ------------------ | ---------------------- | --------- | ------------------------------------------------------ |
+| **Core**           | `core:`                | Always    | Quartz site generator (`@jackyzha0/quartz`)            |
+| **Infrastructure** | `infrastructure:`      | Always    | Shared types, utilities, runtime, markdown processors  |
+| **Themes**         | `themes:`              | Always    | Visual themes (`@quartz-themes/core`)                  |
+| **Plugins**        | `plugins:`             | By preset | Feature packages (search, graph, explorer, etc.)       |
+| **Tools**          | `tools:`               | Always    | Ecosystem tools that consume the above (Quartz Syncer) |
 
 ### Dependency Flow (Impact Assessment)
 
@@ -195,23 +196,23 @@ just repro-check <slug> [--expect-fail]
 
 ## File Locations
 
-| Path | Purpose |
-|---|---|
-| `dev.yaml` | Repo manifest: core, infrastructure, themes, plugins, tools, presets, workspace config |
-| `repos/` | Cloned repositories (gitignored) |
-| `.pnpmfile.cjs` | pnpm readPackage hook for workspace linking |
-| `pnpm-workspace.yaml` | Workspace packages, catalog, overrides, hoisting rules |
-| `turbo.json` | Auto-generated pipeline and task dependencies |
-| `scripts/` | Workspace management scripts |
-| `scripts/lib/` | Shared utilities for all scripts |
-| `tests/` | Unit tests for workspace scripts (vitest) |
-| `e2e/` | Browser E2E tests (Playwright) |
-| `e2e/fixtures/` | Quartz site fixtures for the E2E suites |
-| `e2e/repros/` | Self-contained repros: content + config overlay + spec (see `reproduce-bug` skill) |
-| `docs/ARCHITECTURE.md` | Quartz pipeline + dev-mode tooling map |
-| `.claude/skills/` | Agent workflow skills |
-| `.dev/` | Generated, gitignored: `sandboxes/`, `sites/`, `catalog/`, `visual/`, `inspect/`, `trace/`, `logs/`, `test-results/` |
-| `.github/workflows/` | CI workflows |
+| Path                   | Purpose                                                                                                              |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `dev.yaml`             | Repo manifest: core, infrastructure, themes, plugins, tools, presets, workspace config                               |
+| `repos/`               | Cloned repositories (gitignored)                                                                                     |
+| `.pnpmfile.cjs`        | pnpm readPackage hook for workspace linking                                                                          |
+| `pnpm-workspace.yaml`  | Workspace packages, catalog, overrides, hoisting rules                                                               |
+| `turbo.json`           | Auto-generated pipeline and task dependencies                                                                        |
+| `scripts/`             | Workspace management scripts                                                                                         |
+| `scripts/lib/`         | Shared utilities for all scripts                                                                                     |
+| `tests/`               | Unit tests for workspace scripts (vitest)                                                                            |
+| `e2e/`                 | Browser E2E tests (Playwright)                                                                                       |
+| `e2e/fixtures/`        | Quartz site fixtures for the E2E suites                                                                              |
+| `e2e/repros/`          | Self-contained repros: content + config overlay + spec (see `reproduce-bug` skill)                                   |
+| `docs/ARCHITECTURE.md` | Quartz pipeline + dev-mode tooling map                                                                               |
+| `.claude/skills/`      | Agent workflow skills                                                                                                |
+| `.dev/`                | Generated, gitignored: `sandboxes/`, `sites/`, `catalog/`, `visual/`, `inspect/`, `trace/`, `logs/`, `test-results/` |
+| `.github/workflows/`   | CI workflows                                                                                                         |
 
 ## Key Constraints
 
@@ -247,13 +248,13 @@ When a change spans multiple packages:
 
 Key differences from plugins:
 
-| Aspect | Quartz Plugins | Quartz Syncer |
-|---|---|---|
-| Runtime | Node.js (Quartz build) | Obsidian (Electron) |
-| Build | tsup | esbuild → `main.js` |
-| Release | npm via changesets | GitHub releases |
-| Package name | `@quartz-community/*` | `quartz-syncer` (unscoped) |
-| Depends on | types, utils | remark-obsidian |
+| Aspect       | Quartz Plugins         | Quartz Syncer              |
+| ------------ | ---------------------- | -------------------------- |
+| Runtime      | Node.js (Quartz build) | Obsidian (Electron)        |
+| Build        | tsup                   | esbuild → `main.js`        |
+| Release      | npm via changesets     | GitHub releases            |
+| Package name | `@quartz-community/*`  | `quartz-syncer` (unscoped) |
+| Depends on   | types, utils           | remark-obsidian            |
 
 Syncer has its own `AGENTS.md` at `repos/syncer/AGENTS.md` with architecture details, conventions, and verification steps. Read it before making changes to syncer code.
 
@@ -297,7 +298,7 @@ Quartz core (`@jackyzha0/quartz`, `repos/quartz`) is not published to npm, but i
 
 ## Pitfalls
 
-- **Turbo caching and `--affected` cannot see plugin sources**: turbo hashes inputs through the *root* git repo, where `repos/` is ignored, so every package hashes to "no inputs". With caching on, edited plugins got their old `dist/` replayed and tests replayed cached passes; `--affected` never selected anything (also in CI). `turbo.json` therefore sets `cache: false` (enforced by `scripts/generate-turbo-graph.ts`; a full build is ~25 s), and `just build-affected` / `typecheck-affected` / `test-affected` use `scripts/changed.ts` (per-repo git status + unpushed commits → `--filter=...<pkg>`). `just changed` lists what it detects.
+- **Turbo caching and `--affected` cannot see plugin sources**: turbo hashes inputs through the _root_ git repo, where `repos/` is ignored, so every package hashes to "no inputs". With caching on, edited plugins got their old `dist/` replayed and tests replayed cached passes; `--affected` never selected anything (also in CI). `turbo.json` therefore sets `cache: false` (enforced by `scripts/generate-turbo-graph.ts`; a full build is ~25 s), and `just build-affected` / `typecheck-affected` / `test-affected` use `scripts/changed.ts` (per-repo git status + unpushed commits → `--filter=...<pkg>`). `just changed` lists what it detects.
 
 - **Quartz runs plugin `dist/`, not `src/`**: after editing a plugin run `just build-plugin <name>` (or keep `just watch` running). Sandboxed builds print `⚠ <name>: dist/ is older than src/` when you forget; `just overview` lists every stale package.
 - **Content under `.dev/` is invisible to Quartz**: Quartz globs with `gitignore: true` and `.dev/` is gitignored. Keep content in `e2e/` (sandboxes are their own git roots for this reason).
@@ -307,6 +308,6 @@ Quartz core (`@jackyzha0/quartz`, `repos/quartz`) is not published to npm, but i
 - **`Head.tsx` depends on the plugin index**: Quartz core's `Head.tsx` imports from `.quartz/plugins/index.ts`, which is generated by `install-plugins`. Building without running this step first will fail.
 - **All dependents use caret ranges**: Patch bumps to infrastructure packages (`utils`, `types`, `runtime`) are compatible with all dependents — no downstream `package.json` changes needed.
 - **Green in the workspace ≠ green in the repo's CI**: the workspace installs through pnpm (`pnpm-lock.yaml`), each repo's CI through its own `package-lock.json`. A stale lockfile can pin an older dependency that breaks only in CI (themes-core: `@lucide/icons` 1.70 here, 1.26 in its lockfile). `just drift` lists such differences; `just ci-status` shows what actually ran.
-- **Version PRs get no CI**: changesets/action pushes `changeset-release/main` with `GITHUB_TOKEN`, which triggers no workflows, so a version PR shows no checks. `repos/note-properties` (branch `dev-mode/version-pr-ci`) prototypes running `ci.yml` on it from `release.yml` and reporting a `CI / version PR` commit status.
+- **Version PRs get no CI**: changesets/action pushes `changeset-release/main` with `GITHUB_TOKEN`, which triggers no workflows, so a version PR shows no checks. `just version-pr-ci [repo…]` patches each repo's own `ci.yml`/`release.yml` to run `ci.yml` on the version PR and report a `CI / version PR` commit status (local `dev-mode/version-pr-ci` branches via git plumbing, working trees untouched; `--dry-run`; `--push` pushes and opens PRs). Prototype: `repos/note-properties` branch `dev-mode/version-pr-ci`.
 - **`@quartz-themes/core` tests fail in workspace**: The theme registry tests run `npm install` inside pnpm-managed `node_modules` which causes `ENOTDIR` errors. These tests are excluded from the workspace CI — they run in the theme repo's own CI.
 - **Syncer tests may skip**: Some syncer tests require the Obsidian runtime environment and will show as skipped in the workspace. This is expected.
