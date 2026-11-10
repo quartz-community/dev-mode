@@ -1,0 +1,27 @@
+# Overlay on top of a base config — keep it to what the repro needs.
+# The reporter's left sidebar: explorer (folders collapsed except the current one), then
+# recent notes, desktop-only, limit 3.
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-squeezes-recent-notes"
+  baseUrl: localhost
+plugins:
+  explorer:
+    enabled: true
+    options:
+      folderDefaultState: collapsed
+      folderClickBehavior: link
+    layout:
+      position: left
+      priority: 50
+  recent-notes:
+    enabled: true
+    options:
+      title: Recent Records
+      limit: 3
+      showTags: false
+      linkToMore: false
+    layout:
+      position: left
+      priority: 60
+      display: desktop-only
