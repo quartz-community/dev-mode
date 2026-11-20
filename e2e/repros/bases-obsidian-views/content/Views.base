@@ -1,0 +1,33 @@
+filters:
+  and:
+    - file.inFolder("Items")
+views:
+  - type: kanban
+    name: Kanban
+    columnWidth: 300
+    groupBy:
+      property: category
+      direction: ASC
+    order: [file.name, score]
+  - type: table
+    name: Group order
+    groupBy:
+      property: category
+      direction: DESC
+    groupOrder: [A, null]
+    order: [file.name, score]
+  - type: list
+    name: Numbers
+    markers: number
+    separator: " | "
+    order: [file.name, category, score]
+  - type: list
+    name: Grouped list
+    groupBy:
+      property: category
+      direction: ASC
+    order: [file.name, score]
+  - type: table
+    name: Tall
+    rowHeight: tall
+    order: [file.name, score]

@@ -1,0 +1,178 @@
+filters:
+  and:
+    - file.inFolder("Books")
+summaries:
+  total pages: values.reduce(acc + value, 0)
+  long books: values.filter(value > 70).length
+  mean rounded: values.mean().round(1)
+  first plus rest: values.reduce(if(index == 0, value * 100, acc + value), 0)
+  how many values: values.length
+  broken: values.nope()
+  as list: values
+  raw mean: values.mean()
+  float noise: values.map(value * 1.1).sum()
+  sorted: values.sort()
+  uniques: values.unique()
+  first date: values[0]
+views:
+  - type: table
+    name: Reporter
+    order:
+      - pages
+      - file.name
+      - file.tags
+    summaries:
+      pages: total pages
+      file.name: Filled
+      file.tags: Empty
+  - type: table
+    name: Builtins A
+    order:
+      - pages
+      - rating
+      - read
+      - finished
+      - author
+    summaries:
+      pages: Sum
+      rating: Average
+      read: Checked
+      finished: Earliest
+      author: Unique
+  - type: table
+    name: Builtins B
+    order:
+      - pages
+      - rating
+      - read
+      - finished
+      - author
+    summaries:
+      pages: Median
+      rating: Stddev
+      read: Unchecked
+      finished: Latest
+      author: Filled
+  - type: table
+    name: Builtins C
+    order:
+      - pages
+      - rating
+      - finished
+      - author
+    summaries:
+      pages: Min
+      rating: Max
+      finished: Range
+      author: Empty
+  - type: table
+    name: Builtins D
+    order:
+      - pages
+      - rating
+      - author
+    summaries:
+      pages: Range
+      rating: Median
+      author: Unique
+  - type: table
+    name: Custom
+    order:
+      - pages
+      - rating
+      - finished
+      - author
+      - read
+    summaries:
+      pages: long books
+      rating: mean rounded
+      finished: how many values
+      author: as list
+      read: broken
+  - type: table
+    name: Custom index
+    order:
+      - pages
+    summaries:
+      pages: first plus rest
+  - type: table
+    name: Grouped
+    groupBy:
+      property: author
+      direction: ASC
+    order:
+      - file.name
+      - pages
+    summaries:
+      pages: total pages
+  - type: cards
+    name: Cards
+    order:
+      - file.name
+      - pages
+    summaries:
+      pages: total pages
+  - type: table
+    name: Known pages
+    filters:
+      and:
+        - pages > 0
+    order:
+      - pages
+      - rating
+      - read
+      - author
+    summaries:
+      pages: total pages
+      rating: first plus rest
+      read: undefined name
+      author: unique
+  - type: table
+    name: Known pages index
+    filters:
+      and:
+        - pages > 0
+    order:
+      - pages
+      - rating
+    summaries:
+      pages: first plus rest
+      rating: Average
+  - type: table
+    name: Edge
+    order:
+      - pages
+      - rating
+      - missing
+      - author
+      - finished
+    summaries:
+      pages: raw mean
+      rating: float noise
+      missing: Sum
+      author: Average
+      finished: Unique
+  - type: table
+    name: Edge 2
+    order:
+      - pages
+      - rating
+      - missing
+      - author
+      - finished
+    summaries:
+      pages: Stddev
+      rating: Range
+      missing: Earliest
+      author: uniques
+      finished: sorted
+  - type: table
+    name: Edge 3
+    order:
+      - finished
+      - missing
+      - author
+    summaries:
+      finished: first date
+      missing: Filled
+      author: Max
