@@ -28,6 +28,21 @@ test.describe("Bases formulas render as in Obsidian", () => {
       .toBeGreaterThan(0);
   });
 
+  test("columns are labelled with property names, as in Obsidian", async ({
+    page,
+  }) => {
+    await expect(page.locator("table.bases-table thead th")).toHaveText([
+      "file name",
+      "bold",
+      "star",
+      "dot",
+      "initials",
+      "file links",
+      "file backlinks",
+      "keys",
+    ]);
+  });
+
   test("regular expressions", async ({ page }) => {
     const cells = page.locator("table.bases-table tbody tr td:nth-child(5)");
     await expect(cells).toHaveText(["A.", "B."]);
@@ -41,7 +56,9 @@ test.describe("Bases formulas render as in Obsidian", () => {
     await expect(rows.nth(1).locator("td").nth(6)).toHaveText("Alpha");
   });
 
-  test("file.properties.keys() is the frontmatter as written (no title)", async ({ page }) => {
+  test("file.properties.keys() is the frontmatter as written (no title)", async ({
+    page,
+  }) => {
     const cell = page
       .locator("table.bases-table tbody tr")
       .first()
