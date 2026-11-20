@@ -1,0 +1,21 @@
+filters:
+  and:
+    - file.inFolder("Projects")
+formulas:
+  bold: html("<b>bold</b>")
+  star: icon("star")
+  dot: image("attachments/dot.png")
+  initials: file.name.replace(/^(\w)\w*$/, "$1.")
+  keys: file.properties.keys()
+views:
+  - type: table
+    name: Formulas
+    order:
+      - file.name
+      - formula.bold
+      - formula.star
+      - formula.dot
+      - formula.initials
+      - file.links
+      - file.backlinks
+      - formula.keys
