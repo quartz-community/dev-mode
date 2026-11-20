@@ -18,7 +18,7 @@ export function obsidianSyntaxCases(
       page,
       pageProblems,
     }) => {
-      const tip = page.locator("article blockquote.callout.tip").first();
+      const tip = page.locator("article .callout.tip").first();
       await expect(
         tip.locator(":scope > .callout-title .callout-title-inner"),
       ).toHaveText("Callout title with bold");
@@ -29,16 +29,14 @@ export function obsidianSyntaxCases(
         "Callout body.",
       );
 
-      const inner = tip.locator("blockquote.callout.warning");
+      const inner = tip.locator(".callout.warning");
       await expect(inner).toHaveClass(/is-collapsible/);
       await expect(inner).toHaveClass(/is-collapsed/);
       await expect(inner.locator(".callout-title-inner")).toHaveText(
         "Folded inner",
       );
 
-      const example = page.locator(
-        'article blockquote.callout[data-callout="example"]',
-      );
+      const example = page.locator('article .callout[data-callout="example"]');
       await expect(example).toHaveAttribute("data-callout-metadata", "wide");
       await expect(example).toHaveClass(/is-collapsible/);
       await expect(example).not.toHaveClass(/is-collapsed/);
@@ -51,9 +49,7 @@ export function obsidianSyntaxCases(
         .filter({ hasText: "Not a callout" });
       await expect(code).toHaveCount(1);
       await expect(code).toContainText("> [!info] Not a callout");
-      await expect(page.locator("article blockquote.callout.info")).toHaveCount(
-        0,
-      );
+      await expect(page.locator("article .callout.info")).toHaveCount(0);
     });
 
     test("a soft line ending follows the preset (legacy: <br>, strict: space)", async ({
