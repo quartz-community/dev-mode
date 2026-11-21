@@ -1,0 +1,11 @@
+extends: default
+configuration:
+  pageTitle: "Repro: triage-2635-broken-links-properties"
+  baseUrl: localhost
+  links:
+    disableBrokenWikilinks: true
+plugins:
+  note-properties:
+    enabled: true
+    options:
+      includeAll: true
