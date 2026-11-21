@@ -1,0 +1,10 @@
+extends: default
+configuration:
+  pageTitle: "Repro: bases-link-settings"
+  baseUrl: localhost
+  links:
+    openLinksInNewTab: false
+    externalLinkIcon: true
+plugins:
+  bases-page:
+    enabled: true

@@ -1,0 +1,9 @@
+formulas:
+  me: this.file.name
+views:
+  - type: table
+    name: Embedded file
+    filters:
+      and:
+        - file.inFolder("Books")
+    order: [file.name, formula.me]
