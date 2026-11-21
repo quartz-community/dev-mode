@@ -1,0 +1,12 @@
+extends: default
+configuration:
+  pageTitle: "Repro: encrypted-pages-2-render-time"
+  baseUrl: localhost
+plugins:
+  bases-page:
+    enabled: true
+  encrypted-pages:
+    enabled: true
+    options:
+      # fast key derivation for the test
+      iterations: 1000
