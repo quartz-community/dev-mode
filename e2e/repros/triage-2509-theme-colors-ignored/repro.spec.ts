@@ -11,17 +11,22 @@ import { test, expect } from "../../helpers/repro-fixture";
 const DOCUMENTED_OVERRIDE = `html[saved-theme="dark"] body { --text-normal: #00ff00; --text-muted: #00ff00; }`;
 
 test.describe("jackyzha0/quartz#2509: theme colours vs configured colours", () => {
-  test("control: configured darkgray colours body text (light)", async ({
+  // 3.x themes both modes (2.x tokyo-night had no light mode, so light text was Quartz's), so
+  // the control checks that the configured colour reaches Quartz's variable; the theme's
+  // text colour wins over it, as documented.
+  test("control: configured darkgray reaches Quartz's --darkgray (light)", async ({
     page,
     site,
   }) => {
     await page.emulateMedia({ colorScheme: "light" });
     await page.goto(site.url("/"));
-    const c = await page
-      .locator("article p")
-      .first()
-      .evaluate((p) => getComputedStyle(p).color);
-    expect(c).toBe("rgb(255, 0, 0)");
+    const v = await page.evaluate(() => {
+      const probe = document.createElement("span");
+      probe.style.color = "var(--darkgray)";
+      document.documentElement.append(probe);
+      return getComputedStyle(probe).color;
+    });
+    expect(v).toBe("rgb(255, 0, 0)");
   });
 
   test("the documented custom.scss override recolours a theme's text (dark)", async ({
