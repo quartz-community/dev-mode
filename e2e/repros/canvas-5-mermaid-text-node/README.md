@@ -2,7 +2,7 @@
 title: "Mermaid diagrams in canvas text nodes"
 issue: "quartz-community/canvas-page#5"
 plugins: [canvas-page, obsidian-flavored-markdown]
-status: reproduced # fixed on an unmerged plugin branch (see Notes); set to fixed once released
+status: fixed # quartz-community/canvas-page#17 merged 2026-11-26 (not yet on npm)
 ---
 
 # Mermaid diagrams in canvas text nodes (quartz-community/canvas-page#5)

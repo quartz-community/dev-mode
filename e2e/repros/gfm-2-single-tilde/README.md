@@ -2,7 +2,7 @@
 title: "Single-tilde strikethrough cannot be turned off"
 issue: "quartz-community/github-flavored-markdown#2"
 plugins: [github-flavored-markdown]
-status: reproduced # set to fixed once the fix branch is in the workspace (passes with it)
+status: fixed # quartz-community/github-flavored-markdown#15 merged 2026-11-26 (not yet on npm)
 ---
 
 # Single-tilde strikethrough cannot be turned off

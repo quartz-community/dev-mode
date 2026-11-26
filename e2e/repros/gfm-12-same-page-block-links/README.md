@@ -2,7 +2,7 @@
 title: "Same-page block links (#^id) are not resolved"
 issue: "quartz-community/github-flavored-markdown#12"
 plugins: [github-flavored-markdown, obsidian-flavored-markdown, rehype-obsidian]
-status: reproduced # set to fixed once the fix branch is in the workspace (passes with it)
+status: fixed # quartz-community/rehype-obsidian#16 merged 2026-11-26 (not yet on npm)
 ---
 
 # Same-page block links (`#^id`) are not resolved

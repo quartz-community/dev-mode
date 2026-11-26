@@ -2,7 +2,7 @@
 title: "Explorer scroll fade, scroll position and page scroll (fit sidebar)"
 issue: quartz-community/explorer#16
 plugins: [explorer]
-status: reproduced # fixed on an unmerged explorer branch (quartz-community/explorer#36–#39); set to fixed once released
+status: fixed # quartz-community/explorer#37 merged 2026-11-26 (not yet on npm)
 ---
 
 # Explorer scroll fade, scroll position and page scroll (fit sidebar)

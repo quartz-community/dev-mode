@@ -2,7 +2,7 @@
 title: "Excalidraw sidebar toggle stops working after SPA navigation"
 issue: "quartz-community/obsidian-plugin-excalidraw#15"
 plugins: [obsidian-plugin-excalidraw]
-status: reproduced # fixed on an unmerged plugin branch (see Notes); set to fixed once released
+status: fixed # quartz-community/obsidian-plugin-excalidraw#16 merged 2026-11-26 (not yet on npm)
 ---
 
 # Excalidraw sidebar toggle stops working after SPA navigation (quartz-community/obsidian-plugin-excalidraw#15)

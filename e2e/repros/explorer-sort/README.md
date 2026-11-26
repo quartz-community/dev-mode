@@ -2,7 +2,7 @@
 title: "Explorer sort rules from YAML"
 issue: quartz-community/explorer#6
 plugins: [explorer]
-status: reproduced # fixed on an unmerged explorer branch (quartz-community/explorer#36–#39); set to fixed once released
+status: fixed # quartz-community/explorer#38 merged 2026-11-26 (not yet on npm)
 ---
 
 # Explorer sort rules from YAML

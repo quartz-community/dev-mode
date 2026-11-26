@@ -2,7 +2,7 @@
 title: "OxHugoFlavouredMarkdown regexes are greedy and rewrite code blocks"
 issue: "quartz-community/ox-hugo#7"
 plugins: [ox-hugo]
-status: reproduced # fixed on an unmerged plugin branch (see Notes); set to fixed once released
+status: fixed # quartz-community/ox-hugo#8 merged 2026-11-26 (not yet on npm)
 ---
 
 # OxHugoFlavouredMarkdown regexes are greedy and rewrite code blocks (quartz-community/ox-hugo#7)

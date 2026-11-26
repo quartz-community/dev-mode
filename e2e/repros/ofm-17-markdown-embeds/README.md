@@ -2,7 +2,7 @@
 title: "Markdown-link embeds (![](note.md)) render as broken images"
 issue: "quartz-community/obsidian-flavored-markdown#17"
 plugins: [obsidian-flavored-markdown, canvas-page, bases-page]
-status: reproduced # set to fixed once the fix branch is in the workspace (passes with it)
+status: fixed # quartz-community/obsidian-flavored-markdown#43 merged 2026-11-26 (not yet on npm)
 ---
 
 # Markdown-link embeds (`![](note.md)`) render as broken images
