@@ -41,6 +41,21 @@ Fix: refresh the lockfile in that repo (`npm install --package-lock-only`, insid
 its CI-equivalent checks with npm (`npm ci && npm run check`) before releasing. Widespread drift (`@types/node`
 in every repo) just means lockfiles are old.
 
+```bash
+just bundled-deps                      # which ecosystem packages each plugin bundles, at which version, vs npm latest
+just bundled-deps --published          # + the published tarball Quartz core installs (what users run today)
+just bundled-deps og-image --all --json
+just bundled-deps --fail-on stale      # exit 1 if a bundled copy is old AND its bundled code changed
+```
+Plugins **bundle** their dependencies (tsup `noExternal: [/.*/]`) at the versions their own
+`package-lock.json` pins. Releasing utils / rehype-obsidian / remark-obsidian / types changes nothing for a
+plugin until that plugin bumps its lockfile and releases (og-image shipped utils 1.1.0 without the
+`unescapeHTML` fix; OFM 2.5.1 shipped rehype-obsidian 1.5.0 / remark-obsidian 2.2.1). The workspace never shows
+it (pnpm links local sources). `STALE` = the bundled copy is older and a declaration the bundle contains changed;
+`stale-unaffected` = older, but everything the bundle uses is unchanged (tree-shaken away) — bump it with the next
+release, no hurry. `types-only` = in the lockfile, not in the bundle. Fix a stale one: in that repo
+`npm update <dep> --package-lock-only` (inside `nix develop`), patch changeset, release.
+
 ## 2. Plan the set
 
 ```bash
@@ -50,6 +65,9 @@ just release-plan types --bump major          # shows the dependents that must f
 The plan is topologically ordered (types → utils → runtime/remark/rehype → plugins → Quartz lockfile),
 adds dependents whose ranges would exclude the new version (caret ranges: only majors usually cascade),
 and labels each step `[LOCAL]`, `[NET]` (read-only/wait), or `[ASK]` (outward-facing — confirm with the user).
+
+`release-plan` also lists, for each package in the set, the repos whose default-branch lockfile bundles
+an **older copy** of it ("Bundled copies" section, offline): those need a lockfile bump + release to ship it.
 
 ## 3. Prepare
 
@@ -67,6 +85,10 @@ Follow the plan's `[ASK]` steps only after the user agrees, e.g. `just push-repo
 (runs `just check` first), then merging the Version Packages PR. Wait for npm:
 `pnpm tsx scripts/release.ts wait-npm @quartz-community/explorer@1.0.2`, then `just update-quartz-lockfile`
 and (with approval) `just push-repo quartz`.
+
+**After releasing an infrastructure package** (utils, types, runtime, rehype-obsidian, remark-obsidian):
+run `just bundled-deps --fail-on stale` (`--published` once plugins are out). Every `STALE` row is a plugin
+that still ships the old code; queue a lockfile bump + patch release for each before calling the fix shipped.
 
 ## Gotchas
 

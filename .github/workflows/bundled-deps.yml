@@ -1,0 +1,63 @@
+name: Bundled deps
+
+# Plugins bundle their dependencies at the versions their own package-lock.json
+# pins. This reports plugins that still ship an old copy of an ecosystem package
+# (utils, rehype-obsidian, remark-obsidian, types, ...) whose bundled code changed
+# since. Staleness is fixed by releases in other repos, so on pull requests it
+# only reports (annotation + job summary); the daily run fails visibly.
+# Reads lockfiles from GitHub and tarballs from npm: no workspace setup.
+
+on:
+  schedule:
+    - cron: "41 5 * * *"
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/bundled-deps.ts"
+      - "scripts/lib/bundled-deps/**"
+      - "dev.yaml"
+      - ".github/workflows/bundled-deps.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  bundled-deps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      # Root dependencies only (tsx, semver, yaml): no repos are cloned or installed.
+      - name: Install root dependencies
+        run: pnpm install --ignore-workspace
+
+      - name: Check bundled dependency versions
+        id: check
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -o pipefail
+          pnpm tsx scripts/bundled-deps.ts --remote --published --fail-on stale --markdown | tee report.md
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Bundled dependencies"
+            echo
+            cat report.md 2>/dev/null || echo "(no report)"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.check.outcome }}" = "failure" ]; then
+            echo "::warning::Some plugins bundle a stale copy of an ecosystem package; see the job summary (just bundled-deps)."
+          fi

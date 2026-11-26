@@ -317,6 +317,11 @@ release-status *args:
 drift *args:
     pnpm tsx scripts/release.ts drift "$@"
 
+# Ecosystem packages each plugin bundles (lockfile on the default branch; --published: the tarball Quartz installs) vs npm latest (--fail-on stale|any, --all, --remote, --json)
+[positional-arguments]
+bundled-deps *args:
+    pnpm tsx scripts/bundled-deps.ts "$@"
+
 # Latest CI result per workflow on every dev.yaml repo's tracked branch (read-only gh; --prs for open PR checks, --all, --json; exit 1 if a branch is failing)
 [positional-arguments]
 ci-status *args:

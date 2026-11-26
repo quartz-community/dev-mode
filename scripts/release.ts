@@ -15,6 +15,7 @@
 import { dirname, join, relative, resolve } from "node:path";
 import { parseArgs } from "./lib/args.js";
 import { runWithConcurrency } from "./lib/concurrency.js";
+import { staleBundlesForReleases } from "./lib/bundled-deps/index.js";
 import { runCommand, runCommandCapture, TIMEOUTS } from "./lib/exec.js";
 import { logError } from "./lib/log.js";
 import { readManifest } from "./lib/manifest.js";
@@ -620,9 +621,19 @@ async function commandPlan(context: Context): Promise<number> {
     ...(offline ? [preAdvisories.at(-1)!] : []),
   );
   const steps = buildReleaseSteps(plan);
+  // Plugins bundle their dependencies: a release reaches them only after a
+  // lockfile bump + their own release (offline: local origin/HEAD lockfiles).
+  const staleBundles = await staleBundlesForReleases(
+    packages.map((pkg) => ({
+      repo: pkg.repo,
+      path: pkg.path,
+      category: pkg.category,
+    })),
+    plan.releases,
+  ).catch(() => []);
 
   if (context.json) {
-    console.log(JSON.stringify({ ...plan, steps }, null, 2));
+    console.log(JSON.stringify({ ...plan, steps, staleBundles }, null, 2));
     return 0;
   }
 
@@ -662,6 +673,22 @@ async function commandPlan(context: Context): Promise<number> {
         );
       }
     }
+  }
+  if (staleBundles.length) {
+    console.log(
+      "\nBundled copies (plugins bundle their deps at their lockfile's version):",
+    );
+    for (const warning of staleBundles) {
+      const repos = warning.repos.map(
+        (entry) => `${entry.repo} (${entry.versions.join("/")})`,
+      );
+      console.log(
+        `  releasing ${warning.name} ${warning.version}: ${warning.repos.length} repo(s) bundle an older copy on their default branch and need a lockfile bump + release to ship it: ${repos.length > 12 ? `${repos.slice(0, 12).join(", ")}, +${repos.length - 12} more` : repos.join(", ")}`,
+      );
+    }
+    console.log(
+      "  After publishing, `just bundled-deps --fail-on stale` lists the ones whose bundled code actually changed.",
+    );
   }
   if (plan.advisories.length) {
     console.log("\nAdvisories:");
