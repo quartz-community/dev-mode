@@ -1,0 +1,10 @@
+import { defineConfig } from "tsup";
+
+const SINGLETON_EXTERNALS = ["preact", "preact/hooks", "@jackyzha0/quartz"];
+
+export default defineConfig({
+  entry: ["src/index.ts"],
+  // tsup checks noExternal before external, so `noExternal: [/.*/]` wins
+  noExternal: [/^(?!sharp|@napi-rs\/simple-git)/],
+  external: SINGLETON_EXTERNALS,
+});
