@@ -42,14 +42,14 @@ test.describe("Repro: link facts as in Obsidian", () => {
   test("a block id in a Markdown link's text names the paragraph; a wikilink's does not", async ({
     page,
   }) => {
-    await expect(para(page, 7)).toHaveAttribute("id", "abc");
+    await expect(para(page, 7)).toHaveAttribute("id", "^abc");
     await expect(para(page, 7).locator("a")).toHaveText("text");
     await expect(para(page, 8).locator("a")).toHaveText("café > ^abc");
     await expect(para(page, 16).locator("a")).toHaveText("café > ^xyz");
     await expect(para(page, 16)).not.toHaveAttribute("id", /./);
     await expect(para(page, 19).locator("a")).toHaveText("al ^sss");
     await expect(para(page, 19)).not.toHaveAttribute("id", /./);
-    await expect(para(page, 18)).toHaveAttribute("id", "rrr");
+    await expect(para(page, 18)).toHaveAttribute("id", "^rrr");
   });
 
   test("an embed names its path: decoded for a Markdown image, as written for a wikilink", async ({
