@@ -1,0 +1,21 @@
+# Two explorers (#12): the full tree, and a second one showing only the Notes folder.
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-multiple"
+  baseUrl: localhost
+plugins:
+  explorer:
+    enabled: true
+    options:
+      folderClickBehavior: collapse
+  explorer-notes:
+    source: "@quartz-community/explorer"
+    enabled: true
+    options:
+      title: Notes
+      rootFolder: Notes
+      folderClickBehavior: collapse
+    layout:
+      position: left
+      priority: 55
+      display: desktop-only

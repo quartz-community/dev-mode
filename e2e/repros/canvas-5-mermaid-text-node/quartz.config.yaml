@@ -1,0 +1,14 @@
+# Overlay on top of a base config — keep it to what the repro needs.
+# See scripts/lib/sandbox.ts (ConfigOverlay) for all keys.
+extends: default
+configuration:
+  pageTitle: "Repro: canvas-5-mermaid-text-node"
+
+  baseUrl: localhost
+# only: [obsidian-flavored-markdown, content-page]   # enable ONLY these
+# enable: [graph]
+# disable: [explorer]
+plugins:
+  canvas-page:
+    enabled: true
+    options: {}

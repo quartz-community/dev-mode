@@ -1,0 +1,1 @@
+{"nodes": [{"id": "m", "type": "text", "text": "## Flow\n\n```mermaid\ngraph TD\n  A[Start] --> B{Ok?}\n  B -->|yes| C[Done]\n```", "x": 0, "y": 0, "width": 420, "height": 420}, {"id": "c", "type": "text", "text": "> [!note] A callout\n> with [[Note]] and $x^2$\n\n```js\nconst a = 1\n```", "x": 500, "y": 0, "width": 400, "height": 300}], "edges": []}

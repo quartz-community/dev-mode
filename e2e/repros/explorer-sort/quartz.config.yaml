@@ -1,0 +1,14 @@
+# Sort rules from YAML (#6): folders first, then newest first, then by title.
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-sort"
+  baseUrl: localhost
+plugins:
+  explorer:
+    enabled: true
+    options:
+      folderClickBehavior: collapse
+      sort:
+        - folder
+        - { by: date, direction: desc }
+        - title

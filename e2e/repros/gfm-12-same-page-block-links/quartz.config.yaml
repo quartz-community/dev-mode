@@ -1,0 +1,6 @@
+# Default config: github-flavored-markdown (order 30) resolves same-page anchors before
+# obsidian-flavored-markdown (order 40) gives blocks their ids.
+extends: default
+configuration:
+  pageTitle: "Repro: gfm-12-same-page-block-links"
+  baseUrl: localhost

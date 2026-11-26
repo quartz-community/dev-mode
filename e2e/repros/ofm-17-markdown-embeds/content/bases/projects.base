@@ -1,0 +1,8 @@
+filters:
+  and:
+    - file.inFolder("sub")
+views:
+  - type: table
+    name: Table
+    order:
+      - file.name

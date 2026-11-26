@@ -1,0 +1,11 @@
+# Without obsidian-flavored-markdown's `legacy` parser (OFM disabled here), remark-gfm parses
+# strikethrough and strikes single tildes by default.
+extends: default
+configuration:
+  pageTitle: "Repro: gfm-2-single-tilde"
+  baseUrl: localhost
+disable: [obsidian-flavored-markdown]
+plugins:
+  github-flavored-markdown:
+    options:
+      singleTilde: false

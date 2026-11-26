@@ -1,0 +1,8 @@
+# A left sidebar one screen tall (`fit`, the default): the explorer's list scrolls itself.
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-scroll"
+  baseUrl: localhost
+plugins:
+  explorer:
+    enabled: true

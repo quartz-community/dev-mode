@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: excalidraw-15-sidebar-spa"
+  baseUrl: localhost
+plugins:
+  obsidian-plugin-excalidraw:
+    # not a Quartz dependency: load the workspace clone as a local plugin
+    source: "../../../repos/obsidian-plugin-excalidraw"
+    enabled: true
