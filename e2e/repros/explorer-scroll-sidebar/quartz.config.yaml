@@ -1,0 +1,11 @@
+# layout.sidebars.left: scroll — the sidebar scrolls, not the explorer's list (as in #14).
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-scroll-sidebar"
+  baseUrl: localhost
+layout:
+  sidebars:
+    left: scroll
+plugins:
+  explorer:
+    enabled: true

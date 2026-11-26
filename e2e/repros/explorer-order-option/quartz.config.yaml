@@ -1,0 +1,11 @@
+# Overlay on top of a base config — keep it to what the repro needs.
+# Johnny.Decimal folders (`10 Zebra`, `20 Apple`): sort before mapping keeps the numbered order.
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-order-option"
+  baseUrl: localhost
+plugins:
+  explorer:
+    enabled: true
+    options:
+      order: [filter, sort, map]

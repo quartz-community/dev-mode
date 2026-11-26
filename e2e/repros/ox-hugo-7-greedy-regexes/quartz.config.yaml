@@ -1,0 +1,7 @@
+extends: default
+configuration:
+  pageTitle: "Repro: ox-hugo-7-greedy-regexes"
+  baseUrl: localhost
+plugins:
+  ox-hugo:
+    enabled: true
