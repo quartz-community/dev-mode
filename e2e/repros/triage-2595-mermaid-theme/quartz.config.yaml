@@ -5,3 +5,9 @@ configuration:
 # The real trigger is @quartz-themes/core (theme: default) whose CSS sets Quartz vars to
 # hsl(calc(...)) values. Enabling it here makes the theme npm-install into the sandbox, so the
 # spec injects the same variable values instead.
+plugins:
+  obsidian-flavored-markdown:
+    enabled: true
+    options:
+      # Mermaid.js (deprecated; Pele is the default since OFM 2.4): the renderer #2595 is about.
+      diagramRenderer: mermaid

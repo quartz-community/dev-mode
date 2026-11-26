@@ -32,9 +32,10 @@ test.describe("Repro: ofm-table-surplus-cell-footnote", () => {
       /Referenced in a hidden cell and in the text\./,
       /Referenced only in the text\./,
     ]);
-    // `[^both]` is footnote 3 (first referenced in the hidden cell), `[^last]` footnote 4.
+    // `[^both]` is footnote 3 (first referenced in the hidden cell), `[^last]` footnote 4,
+    // labelled as in Obsidian (rehype-obsidian, OFM 2.4+).
     await expect(page.locator("article p sup a[data-footnote-ref]")).toHaveText(
-      ["3", "4"],
+      ["[3]", "[4]"],
     );
   });
 

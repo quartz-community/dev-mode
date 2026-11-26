@@ -23,8 +23,10 @@ remark-obsidian 2.2.1's triage of another parser's oracle corpus handed five lin
   (`[[café#^xyz]]` → `café > ^xyz`, `[[café|al ^sss]]` → `al ^sss`) names nothing. Quartz
   stripped it and gave the paragraph the id.
 - An unresolved embed shows its path: Markdown images decoded (`![](missing%20pic.png)` →
-  “missing pic.png”), wikilinks as written (`![[missing%20file.png]]`). Wikilink image embeds
-  take the path as alt when the alias is empty or only a size (`![[pic.png|100]]` → `pic.png`).
+  alt “missing pic.png”), wikilinks as written (`![[missing%20file.png]]` → Obsidian's
+  empty-attachment notice “missing%20file.png” could not be found, OFM 2.4+). Wikilink image
+  embeds take the path as alt when the alias is empty or only a size (`![[pic.png|100]]` →
+  `pic.png`).
 
 ## Fix
 

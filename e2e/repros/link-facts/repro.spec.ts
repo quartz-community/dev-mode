@@ -56,7 +56,19 @@ test.describe("Repro: link facts as in Obsidian", () => {
     page,
   }) => {
     const alt = (n: number) => para(page, n).locator("img");
-    await expect(alt(11)).toHaveAttribute("alt", "missing%20file.png");
+    // A missing attachment embedded with a wikilink is Obsidian's empty-attachment notice
+    // (obsidian-flavored-markdown 2.4), naming the path as written, not percent-decoded.
+    const missing = (n: number) =>
+      para(page, n).locator(
+        "span.internal-embed.file-embed.mod-empty-attachment",
+      );
+    await expect(missing(11)).toHaveText(
+      "“missing%20file.png” could not be found.",
+    );
+    await expect(missing(23)).toHaveText(
+      "“missing file.png” could not be found.",
+    );
+    await expect(para(page, 11).locator("img")).toHaveCount(0);
     await expect(alt(13)).toHaveAttribute("alt", "alt");
     await expect(alt(14)).toHaveAttribute("alt", "missing pic.png");
     await expect(alt(20)).toHaveAttribute("alt", "pic.png");
