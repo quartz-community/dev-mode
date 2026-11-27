@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: folder-page-unlisted-index"
+  baseUrl: localhost
