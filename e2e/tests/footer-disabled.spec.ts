@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/coverage-fixture.js";
 
 test.use({ baseURL: "http://localhost:4176" });
 

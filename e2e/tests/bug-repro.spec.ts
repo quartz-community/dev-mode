@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/coverage-fixture.js";
 import { graphLabelFills, installGraphProbe } from "../helpers/graph-probe";
 
 const BASE = "/bug-repro";
