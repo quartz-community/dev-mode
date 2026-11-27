@@ -28,9 +28,12 @@ test.describe("bases cards as in Obsidian (bases-page#3, #10)", () => {
   test("clicking a card's cover opens its note", async ({ page, site }) => {
     await page.goto(site.url("cards"));
     // a real click on the cover area lands on the stretched file-name link
-    const cover = await section(page, 0)
-      .locator('.bases-card[data-slug="c-port"] .bases-card-cover')
-      .boundingBox();
+    const coverEl = section(page, 0).locator(
+      '.bases-card[data-slug="c-port"] .bases-card-cover',
+    );
+    // mouse.click() at viewport coordinates: the cover is below the fold at 1280x720
+    await coverEl.scrollIntoViewIfNeeded();
+    const cover = await coverEl.boundingBox();
     await page.mouse.click(cover!.x + 20, cover!.y + 20);
     await expect(page).toHaveURL(/\/c-port$/);
   });

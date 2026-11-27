@@ -2,11 +2,11 @@
 title: "Explorer sort rules from YAML"
 issue: quartz-community/explorer#6
 plugins: [explorer]
-status: fixed # quartz-community/explorer#38 merged 2026-11-26 (not yet on npm)
+status: fixed # quartz-community/explorer#38 (explorer 1.2.0)
 ---
 
 # Explorer sort rules from YAML
 
-`sort: [folder, { by: date, direction: desc }, title]`. Without dates in contentIndex.json (Quartz core today) the title decides; with dates (injected by the spec, as the pending core change will write them) the newest page comes first; folders sort by their newest page, or by their index page's frontmatter date when the index entry has `dateFromFrontmatter` (jackyzha0/quartz#2703).
+`sort: [folder, { by: date, direction: desc }, title]`. Quartz core writes page dates to contentIndex.json, with `dateFromFrontmatter` for frontmatter dates (jackyzha0/quartz#2703, #2709): the newest page comes first, and a folder sorts by its index page's frontmatter date, else by its newest page. The spec simulates older cores by rewriting the index: without dates the title decides; with dates but no `dateFromFrontmatter`, folders sort by their newest page.
 
 Run: `just repro-check explorer-sort`. Fixed on explorer branch `dev-mode/sort-option`.

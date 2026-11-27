@@ -21,7 +21,9 @@ test.describe("jackyzha0/quartz#2595 (pele renderer) calc()-based theme colours"
     pageProblems,
   }) => {
     await page.goto(site.url("/"));
-    await expect(page.locator("code.mermaid svg").first()).toBeVisible({
+    await expect(
+      page.locator(".mermaid-diagram > div.mermaid > svg").first(),
+    ).toBeVisible({
       timeout: 20000,
     });
     expect(pageProblems.all()).toEqual([]);
@@ -35,7 +37,9 @@ test.describe("jackyzha0/quartz#2595 (pele renderer) calc()-based theme colours"
     await page.goto(site.url("/"));
     await page.waitForTimeout(4000);
     expect(pageProblems.all()).toEqual([]);
-    await expect(page.locator("code.mermaid svg").first()).toBeVisible({
+    await expect(
+      page.locator(".mermaid-diagram > div.mermaid > svg").first(),
+    ).toBeVisible({
       timeout: 20000,
     });
     expect(pageProblems.all()).toEqual([]);

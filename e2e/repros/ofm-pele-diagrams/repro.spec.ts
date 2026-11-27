@@ -4,6 +4,9 @@ import { test, expect } from "../../helpers/repro-fixture";
 // See README.md. diagramRenderer: pele, served under the base path /pele-site.
 
 const PELE_DIR = "static/plugins/obsidian-flavored-markdown/pele/";
+// Obsidian's markup (OFM 2.4+): div.mermaid-diagram > div.mermaid holding Pele's SVG, with the
+// expand button and popup next to it.
+const DIAGRAM_SVG = ".mermaid-diagram > div.mermaid > svg";
 
 function recordRequests(page: Page): string[] {
   const urls: string[] = [];
@@ -37,7 +40,7 @@ test.describe("ofm diagramRenderer: pele", () => {
   }) => {
     const urls = recordRequests(page);
     await page.goto(site.url("diagrams"));
-    await expect(page.locator("code.mermaid svg")).toHaveCount(2);
+    await expect(page.locator(DIAGRAM_SVG)).toHaveCount(2);
     await page.waitForLoadState("networkidle");
 
     expect(cdn(urls)).toEqual([]);
@@ -60,9 +63,9 @@ test.describe("ofm diagramRenderer: pele", () => {
     await page
       .locator('article a.internal[data-slug="nested/deeper/deep-diagram"]')
       .click();
-    await expect(page.locator("code.mermaid svg")).toHaveCount(1);
+    await expect(page.locator(DIAGRAM_SVG)).toHaveCount(1);
     await page.goto(site.url("nested/deeper/deep-diagram"));
-    await expect(page.locator("code.mermaid svg")).toHaveCount(1);
+    await expect(page.locator(DIAGRAM_SVG)).toHaveCount(1);
     expect(
       pele(urls).every((u) =>
         new URL(u).pathname.startsWith(`/pele-site/${PELE_DIR}`),
@@ -76,20 +79,20 @@ test.describe("ofm diagramRenderer: pele", () => {
     site,
   }) => {
     await page.goto(site.url("diagrams"));
-    await expect(page.locator("code.mermaid svg")).toHaveCount(2);
-    const pre = page.locator("pre:has(code.mermaid)").first();
-    const expand = pre.locator(".expand-button");
-    const popup = pre.locator("#mermaid-container");
+    await expect(page.locator(DIAGRAM_SVG)).toHaveCount(2);
+    const diagram = page.locator(".mermaid-diagram").first();
+    const expand = diagram.locator(".expand-button");
+    const popup = diagram.locator("#mermaid-container");
 
     for (let i = 0; i < 2; i++) {
-      await pre.hover();
+      await diagram.hover();
       await expand.click();
       await expect(popup).toHaveClass(/active/);
       await expect(popup.locator(".mermaid-content svg")).toHaveCount(1);
       await page.keyboard.press("Escape");
       await expect(popup).not.toHaveClass(/active/);
     }
-    await pre.hover();
+    await diagram.hover();
     await expand.click();
     await expect(popup.locator(".mermaid-controls")).toHaveCount(1);
     await page.keyboard.press("Escape");

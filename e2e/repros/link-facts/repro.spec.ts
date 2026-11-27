@@ -42,21 +42,33 @@ test.describe("Repro: link facts as in Obsidian", () => {
   test("a block id in a Markdown link's text names the paragraph; a wikilink's does not", async ({
     page,
   }) => {
-    await expect(para(page, 7)).toHaveAttribute("id", "abc");
+    await expect(para(page, 7)).toHaveAttribute("id", "^abc");
     await expect(para(page, 7).locator("a")).toHaveText("text");
     await expect(para(page, 8).locator("a")).toHaveText("café > ^abc");
     await expect(para(page, 16).locator("a")).toHaveText("café > ^xyz");
     await expect(para(page, 16)).not.toHaveAttribute("id", /./);
     await expect(para(page, 19).locator("a")).toHaveText("al ^sss");
     await expect(para(page, 19)).not.toHaveAttribute("id", /./);
-    await expect(para(page, 18)).toHaveAttribute("id", "rrr");
+    await expect(para(page, 18)).toHaveAttribute("id", "^rrr");
   });
 
   test("an embed names its path: decoded for a Markdown image, as written for a wikilink", async ({
     page,
   }) => {
     const alt = (n: number) => para(page, n).locator("img");
-    await expect(alt(11)).toHaveAttribute("alt", "missing%20file.png");
+    // A missing attachment embedded with a wikilink is Obsidian's empty-attachment notice
+    // (obsidian-flavored-markdown 2.4), naming the path as written, not percent-decoded.
+    const missing = (n: number) =>
+      para(page, n).locator(
+        "span.internal-embed.file-embed.mod-empty-attachment",
+      );
+    await expect(missing(11)).toHaveText(
+      "“missing%20file.png” could not be found.",
+    );
+    await expect(missing(23)).toHaveText(
+      "“missing file.png” could not be found.",
+    );
+    await expect(para(page, 11).locator("img")).toHaveCount(0);
     await expect(alt(13)).toHaveAttribute("alt", "alt");
     await expect(alt(14)).toHaveAttribute("alt", "missing pic.png");
     await expect(alt(20)).toHaveAttribute("alt", "pic.png");

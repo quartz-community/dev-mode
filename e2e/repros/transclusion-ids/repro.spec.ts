@@ -34,7 +34,13 @@ test.describe("ids in transcluded content", () => {
     page,
   }) => {
     const ref = page
-      .locator("article .markdown-rendered > p a[data-footnote-ref]")
+      // a host paragraph, bare or in Obsidian's block wrapper (OFM 2.4 blockWrappers)
+      .locator(
+        [
+          "article > .markdown-rendered > p a[data-footnote-ref]",
+          "article > .markdown-rendered > .el-p > p a[data-footnote-ref]",
+        ].join(", "),
+      )
       .first();
     const target = (await ref.getAttribute("href"))!;
     await expect(page.locator(firstWithId(target.slice(1)))).toContainText(
