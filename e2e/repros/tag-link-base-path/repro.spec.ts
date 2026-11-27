@@ -32,7 +32,10 @@ test.describe("inline tag links under a base path", () => {
         ).toBe(200);
       }
     }
-    expect(pageProblems.all()).toEqual([]);
+    // going to the next page cancels the previous one's link prefetches (net::ERR_ABORTED)
+    expect(
+      pageProblems.all().filter((p) => !p.includes("net::ERR_ABORTED")),
+    ).toEqual([]);
   });
 
   test("clicking a tag link from a nested note opens the tag page", async ({
