@@ -2,7 +2,7 @@
 title: "Canvas: wheelBehavior (and every other canvas-page display option) is ignored"
 issue: "quartz-community/canvas-page#3"
 plugins: [canvas-page]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Canvas `wheelBehavior: zoom` is ignored
