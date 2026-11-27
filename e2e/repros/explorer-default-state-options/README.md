@@ -2,7 +2,7 @@
 title: "Explorer ignores folderDefaultState and useSavedState"
 issue: ""
 plugins: [explorer]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Explorer ignores folderDefaultState and useSavedState

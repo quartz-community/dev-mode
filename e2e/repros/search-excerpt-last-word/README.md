@@ -2,7 +2,7 @@
 title: "Search excerpt drops the last word of the text and adds an ellipsis"
 issue: ""
 plugins: [search]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Search excerpt drops the last word
