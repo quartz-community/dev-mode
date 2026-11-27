@@ -1,0 +1,11 @@
+extends: default
+configuration:
+  pageTitle: "Repro: ttrpg-maps-render-spa"
+  baseUrl: localhost
+# d3 / PixiJS come from jsDelivr, which the spec answers with empty scripts
+disable: [graph]
+plugins:
+  obsidian-plugin-ttrpg-tools-maps:
+    # not a Quartz dependency: load the workspace clone as a local plugin
+    source: "../../../repos/obsidian-plugin-ttrpg-tools-maps"
+    enabled: true

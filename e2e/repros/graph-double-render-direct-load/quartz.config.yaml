@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: graph-double-render-direct-load"
+  baseUrl: localhost

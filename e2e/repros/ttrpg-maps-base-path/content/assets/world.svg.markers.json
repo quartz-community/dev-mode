@@ -1,0 +1,24 @@
+{
+  "layers": [{ "id": "default", "name": "Default", "visible": true }],
+  "markers": [
+    {
+      "id": "m_tavern",
+      "x": 0.25,
+      "y": 0.5,
+      "layer": "default",
+      "iconKey": "pin-red",
+      "tooltip": "The Prancing Pony",
+      "type": "pin"
+    },
+    {
+      "id": "m_tower",
+      "x": 0.75,
+      "y": 0.25,
+      "layer": "default",
+      "tooltip": "The Tower",
+      "type": "pin"
+    }
+  ],
+  "bases": ["assets/world.svg"],
+  "panClamp": true
+}

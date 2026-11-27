@@ -1,0 +1,12 @@
+extends: default
+configuration:
+  pageTitle: "Repro: encrypted-wrong-password-enter"
+  baseUrl: localhost
+# d3 / PixiJS come from jsDelivr, which the spec answers with empty scripts
+disable: [graph]
+plugins:
+  encrypted-pages:
+    enabled: true
+    options:
+      # fast key derivation for the test
+      iterations: 1000

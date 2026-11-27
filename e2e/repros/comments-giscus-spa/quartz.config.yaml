@@ -1,0 +1,25 @@
+extends: default
+configuration:
+  pageTitle: "Repro: comments-giscus-spa"
+  baseUrl: localhost
+# d3 / PixiJS come from jsDelivr, which the spec answers with empty scripts
+disable: [graph]
+plugins:
+  comments:
+    enabled: true
+    options:
+      provider: giscus
+      options:
+        # dummy ids: the spec answers giscus.app itself and checks what the component asks it for
+        repo: example/repo
+        repoId: R_dummy
+        category: Announcements
+        categoryId: DIC_dummy
+        mapping: pathname
+        strict: false
+        reactionsEnabled: false
+        inputPosition: top
+        lang: nl
+        themeUrl: https://giscus.app/themes
+        lightTheme: light_protanopia
+        darkTheme: dark_dimmed
