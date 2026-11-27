@@ -1,0 +1,8 @@
+extends: default
+configuration:
+  pageTitle: "Repro: stacked-pages-base-path"
+  # a base path, which the tabs' links doubled
+  baseUrl: localhost/sub
+plugins:
+  stacked-pages:
+    enabled: true
