@@ -278,6 +278,8 @@ Self-contained **repros** live in `e2e/repros/<slug>/` and run via `e2e/playwrig
 
 Browser: `scripts/lib/browser.ts` probes `CHROME_BIN`, the user/system Nix profiles and `PATH` for a Chromium that launches (a stale direnv `CHROME_BIN` can point at a Chromium with a mismatched glibc). Override with `PLAYWRIGHT_CHROMIUM=<path>` or `=bundled`. Outside Nix, run `just install-browsers`.
 
+To build sites and repros against another Quartz checkout (a worktree of a core branch, or an older release with its own `npm ci`), set `DEV_MODE_QUARTZ_DIR=<dir>`; sandboxes then copy that checkout and link its `node_modules`.
+
 Playwright retries are CI-only (`retries: 2` when `CI=true`, `0` locally).
 
 ## Plugin Release Workflow
