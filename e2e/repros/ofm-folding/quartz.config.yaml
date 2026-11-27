@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: ofm-folding"
+  baseUrl: localhost
+plugins:
+  obsidian-flavored-markdown:
+    options:
+      foldHeadings: true
+      foldLists: true
