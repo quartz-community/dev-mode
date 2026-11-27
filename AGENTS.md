@@ -19,6 +19,7 @@
 | Look at a rendered page                                   | `just inspect <target> <page> --screenshot`                       | errors, layout map, computed styles, PNG                                  |
 | Health-check a whole site                                 | `just site-smoke <target>`                                        | broken links/assets, console/page/SPA errors, mobile overflow             |
 | Did a CSS change break anything?                          | `just visual-baseline` → edit → `just visual-check`               | pixel + computed-style diff report                                        |
+| Which plugin browser code do the e2e suites never run?     | `just e2e-coverage` (`just e2e-coverage-report` re-renders; `--plugins a,b`, `--all`) | `.dev/e2e-coverage/REPORT.md`: % of `*.inline.ts` functions run per plugin, never-run functions by name |
 | Turn an issue into a failing test                         | `just repro-new <slug>` → `just repro-check <slug> --expect-fail` | `e2e/repros/<slug>/`                                                      |
 | What needs releasing, in what order                       | `just release-status` / `just release-plan <pkgs>`                | ordered steps, `[ASK]` = outward-facing                                   |
 | Is CI green on every repo's default branch?               | `just ci-status [repo…]` (`--prs` for open PRs' checks, `--all`)  | failing workflows + run URLs; exit 1 if any branch fails (read-only `gh`) |

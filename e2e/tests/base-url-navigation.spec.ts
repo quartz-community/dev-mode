@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/coverage-fixture.js";
 
 const EXPECTED_MISSING_RESOURCES = ["contentIndex.json"];
 

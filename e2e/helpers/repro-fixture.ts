@@ -16,7 +16,7 @@
  * `pageProblems` collects console errors, uncaught exceptions, failed requests
  * and HTTP >= 400 responses for the current test.
  */
-import { test as base, expect, type Page } from "@playwright/test";
+import { test as base, expect, type Page } from "./coverage-fixture.js";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { SITES_ROOT, withLock } from "../../scripts/lib/sandbox.js";
