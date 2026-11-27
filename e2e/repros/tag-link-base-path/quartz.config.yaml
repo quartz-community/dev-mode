@@ -1,0 +1,5 @@
+extends: default
+configuration:
+  pageTitle: "Repro: tag-link-base-path"
+  # a base path, which the tag links left
+  baseUrl: localhost/sub
