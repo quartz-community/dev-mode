@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-folder-state"
+  baseUrl: localhost
+disable: [graph]
+plugins:
+  explorer:
+    options:
+      folderClickBehavior: collapse
