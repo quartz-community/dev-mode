@@ -1,0 +1,13 @@
+extends: default
+configuration:
+  pageTitle: "Repro: encrypted-custom-output-path"
+  # a base path, so a shadow index URL that ignores it points outside the site
+  baseUrl: localhost/sub
+plugins:
+  encrypted-pages:
+    enabled: true
+    options:
+      # fast key derivation for the test
+      iterations: 1000
+      unlistWhenEncrypted: true
+      outputPath: data/shadow.json

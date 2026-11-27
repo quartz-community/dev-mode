@@ -1,0 +1,10 @@
+extends: default
+configuration:
+  pageTitle: "Repro: encrypted-numeric-password"
+  baseUrl: localhost
+plugins:
+  encrypted-pages:
+    enabled: true
+    options:
+      # fast key derivation for the test
+      iterations: 1000

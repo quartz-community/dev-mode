@@ -1,0 +1,21 @@
+extends: default
+configuration:
+  pageTitle: "Repro: encrypted-render-reinit"
+  baseUrl: localhost
+plugins:
+  comments:
+    enabled: true
+    options:
+      provider: giscus
+      options:
+        # dummy ids: the spec blocks giscus.app and only counts how often client.js is loaded
+        repo: example/repo
+        repoId: R_dummy
+        category: Announcements
+        categoryId: DIC_dummy
+  encrypted-pages:
+    enabled: true
+    options:
+      # fast key derivation for the test
+      iterations: 1000
+      unlistWhenEncrypted: true
