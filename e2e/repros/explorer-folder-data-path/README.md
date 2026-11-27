@@ -2,7 +2,7 @@
 title: "Explorer folder rows get the slug, not the vault path, as data-path"
 issue: ""
 plugins: [explorer, folder-page]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # open | reproduced | fixed | wontfix
 ---
 
 # Explorer folder rows get the slug as data-path
