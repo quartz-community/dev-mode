@@ -486,6 +486,25 @@ e2e: (e2e-build "all")
     @just e2e-test
     @just repro-test
 
+# Browser-script coverage of the e2e suites, per plugin -> .dev/e2e-coverage/REPORT.md (extra args go to the report)
+[positional-arguments]
+e2e-coverage *args:
+    #!/usr/bin/env bash
+    set -uo pipefail
+    dir="$PWD/.dev/e2e-coverage/raw"
+    rm -rf "$dir" && mkdir -p "$dir"
+    just e2e-build || exit 1
+    E2E_JS_COVERAGE="$dir" timeout 1800 pnpm exec playwright test --config e2e/playwright.config.ts \
+      || echo "e2e-coverage: fixture suites failed (coverage kept)"
+    E2E_JS_COVERAGE="$dir" timeout 3600 pnpm tsx scripts/repro.ts test \
+      || echo "e2e-coverage: repro suite failed (coverage kept)"
+    timeout 600 pnpm tsx scripts/e2e-coverage-report.ts --dir "$dir" "$@"
+
+# Re-render the e2e coverage report from existing dumps (--plugins a,b --all --json)
+[positional-arguments]
+e2e-coverage-report *args:
+    pnpm tsx scripts/e2e-coverage-report.ts "$@"
+
 # Install Playwright browser binaries (not needed if using Nix)
 install-browsers:
     pnpm exec playwright install chromium

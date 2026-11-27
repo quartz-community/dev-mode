@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "../helpers/coverage-fixture.js";
 
 const BASE = "/bug-repro";
 const ORIGIN = "http://localhost:4175";
