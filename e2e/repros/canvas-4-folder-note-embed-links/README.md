@@ -2,7 +2,7 @@
 title: "Links inside an embedded folder note resolve one directory too high"
 issue: "quartz-community/canvas-page#4"
 plugins: [canvas-page]
-status: fixed # quartz-community/utils#19 merged 2026-11-26 (not yet on npm)
+status: fixed # quartz-community/utils#19 merged 2026-11-26 (on npm: canvas-page 1.1.4 bundles it)
 ---
 
 # Links inside an embedded folder note resolve one directory too high (quartz-community/canvas-page#4)

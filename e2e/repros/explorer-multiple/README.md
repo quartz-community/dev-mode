@@ -2,7 +2,7 @@
 title: "Two explorers, one with rootFolder"
 issue: quartz-community/explorer#12
 plugins: [explorer]
-status: fixed # quartz-community/explorer#39 merged 2026-11-26 (not yet on npm)
+status: fixed # quartz-community/explorer#39 merged 2026-11-26 (explorer 1.2.2 on npm)
 ---
 
 # Two explorers, one with rootFolder

@@ -1,0 +1,7 @@
+extends: default
+configuration:
+  pageTitle: "Repro: search-text-matching"
+  baseUrl: localhost
+  slugs:
+    stripDiacritics: true
+disable: [graph]

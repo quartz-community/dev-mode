@@ -1,0 +1,9 @@
+extends: default
+configuration:
+  pageTitle: "Repro: canvas-3-wheel-zoom-option"
+  baseUrl: localhost
+plugins:
+  canvas-page:
+    enabled: true
+    options:
+      wheelBehavior: zoom

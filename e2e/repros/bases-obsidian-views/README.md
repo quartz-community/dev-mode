@@ -24,3 +24,9 @@ Found comparing bases-page with Obsidian 1.15.1 (`just obsidian-bases-probe`): `
 As in Obsidian: kanban columns None, A, B (300px wide); the "Group order" table shows only A and
 None; the list is numbered with `|` between properties; the grouped list has headings A, B,
 None; tall rows are 120px.
+
+The view tabs (`bases.inline.ts`) are covered too: ArrowRight/ArrowLeft (wrapping), Home and
+End move `aria-selected`, the roving `tabindex` and the active panel; Ctrl/Alt/Meta + arrow do
+nothing. `twice.md` transcludes the base twice: every tab and panel id is unique, each tab's
+`aria-controls` is a panel of the same copy labelled by that tab, and a click switches only
+its own copy.

@@ -44,13 +44,20 @@ test.describe("Search Functionality", () => {
     await searchBar.fill("Getting Started");
     await page.waitForTimeout(500);
 
-    const results = page.locator(".search-layout");
-    await expect(results).toBeVisible();
-
-    const hasResults = await results.evaluate((el) => {
-      return el.children.length > 0 || el.innerHTML.trim().length > 0;
-    });
-    expect(hasResults).toBe(true);
+    await expect(page.locator(".search-layout")).toBeVisible();
+    // `.results-container` always exists; a match is a `.result-card` that is not `.no-match`.
+    const cards = page.locator(
+      ".results-container .result-card:not(.no-match)",
+    );
+    await expect(cards.first()).toBeVisible();
+    await expect(page.locator(".results-container .no-match")).toHaveCount(0);
+    await expect(cards.first()).toHaveAttribute(
+      "href",
+      new RegExp(`^${BASE}/docs/getting-started$`),
+    );
+    await expect(cards.first().locator(".card-title")).toHaveText(
+      /getting started/i,
+    );
   });
 
   test("search can be dismissed", async ({ page }) => {

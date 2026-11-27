@@ -1,0 +1,11 @@
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-default-state-options"
+  baseUrl: localhost
+disable: [graph]
+plugins:
+  explorer:
+    options:
+      folderClickBehavior: collapse
+      folderDefaultState: open
+      useSavedState: false

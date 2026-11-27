@@ -1,13 +1,8 @@
 import { test, expect, type Page } from "../../helpers/repro-fixture";
+import { overflowingNodeCases, transform } from "./scroll-cases";
 
 // canvas-page#3: a two-finger trackpad scroll zoomed the canvas. Like Obsidian/Figma it should pan;
 // a pinch (ctrl + wheel in Chromium/Firefox) or Ctrl/Cmd + wheel zooms.
-async function transform(page: Page) {
-  return page.locator(".canvas-viewport").evaluate((el) => {
-    const m = new DOMMatrix(getComputedStyle(el).transform);
-    return { x: m.e, y: m.f, scale: m.a };
-  });
-}
 
 async function wheel(page: Page, init: WheelEventInit) {
   await page.locator(".canvas-container").evaluate((el, init) => {
@@ -100,3 +95,5 @@ test.describe("quartz-community/canvas-page#3 wheel pans, pinch zooms", () => {
     expect(after.y).toBeCloseTo(before.y, 1);
   });
 });
+
+overflowingNodeCases("canvas-3-wheel-pans", "pan");

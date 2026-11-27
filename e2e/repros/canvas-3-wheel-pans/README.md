@@ -2,7 +2,7 @@
 title: "Canvas: two-finger scroll should pan, pinch / Ctrl + wheel should zoom"
 issue: "quartz-community/canvas-page#3"
 plugins: [canvas-page]
-status: fixed # quartz-community/canvas-page#16 merged 2026-11-26 (not yet on npm)
+status: fixed # quartz-community/canvas-page#16 merged 2026-11-26 (canvas-page 1.1.4 on npm)
 ---
 
 # Canvas: two-finger scroll should pan, pinch / Ctrl + wheel should zoom (quartz-community/canvas-page#3)
@@ -26,3 +26,6 @@ pointer by `exp(±min(|delta|, 10) / 100)` (smooth for pinches, the old ~10% ste
 Safari `gesturestart/gesturechange` pinches zoom. Option `wheelBehavior: "zoom"` restores the old
 "wheel always zooms" behaviour for mouse-first sites. Scrollable text nodes still scroll first.
 Safari's gesture path is untested here (Chromium only).
+
+A wheel over a text node whose text overflows (node `c`) scrolls the node first and pans the
+canvas once the node is at its end (`scroll-cases.ts`, shared with `canvas-3-wheel-zoom-option`).

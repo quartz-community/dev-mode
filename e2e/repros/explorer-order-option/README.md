@@ -2,7 +2,7 @@
 title: "Explorer ignores its `order` option"
 issue: quartz-community/explorer#3
 plugins: [explorer]
-status: fixed # quartz-community/explorer#36 merged 2026-11-26 (not yet on npm)
+status: fixed # quartz-community/explorer#36 merged 2026-11-26 (explorer 1.2.2 on npm)
 ---
 
 # Explorer ignores its `order` option

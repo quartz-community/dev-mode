@@ -1,0 +1,5 @@
+extends: default
+configuration:
+  pageTitle: "Repro: explorer-folder-data-path"
+  baseUrl: localhost
+disable: [graph]
