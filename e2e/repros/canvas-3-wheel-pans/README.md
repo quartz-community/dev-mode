@@ -2,7 +2,7 @@
 title: "Canvas: two-finger scroll should pan, pinch / Ctrl + wheel should zoom"
 issue: "quartz-community/canvas-page#3"
 plugins: [canvas-page]
-status: fixed # quartz-community/canvas-page#16 merged 2026-11-26 (not yet on npm)
+status: fixed # quartz-community/canvas-page#16 merged 2026-11-26 (canvas-page 1.1.4 on npm)
 ---
 
 # Canvas: two-finger scroll should pan, pinch / Ctrl + wheel should zoom (quartz-community/canvas-page#3)
