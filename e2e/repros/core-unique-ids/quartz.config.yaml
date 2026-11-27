@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-unique-ids"
+  baseUrl: localhost
