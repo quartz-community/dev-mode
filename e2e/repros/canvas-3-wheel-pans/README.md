@@ -26,3 +26,6 @@ pointer by `exp(±min(|delta|, 10) / 100)` (smooth for pinches, the old ~10% ste
 Safari `gesturestart/gesturechange` pinches zoom. Option `wheelBehavior: "zoom"` restores the old
 "wheel always zooms" behaviour for mouse-first sites. Scrollable text nodes still scroll first.
 Safari's gesture path is untested here (Chromium only).
+
+A wheel over a text node whose text overflows (node `c`) scrolls the node first and pans the
+canvas once the node is at its end (`scroll-cases.ts`, shared with `canvas-3-wheel-zoom-option`).
