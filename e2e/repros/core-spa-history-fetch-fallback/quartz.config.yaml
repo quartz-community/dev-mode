@@ -1,0 +1,6 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-spa-history-fetch-fallback"
+  baseUrl: localhost
+# d3 / PixiJS come from jsDelivr, which the spec answers with empty scripts
+disable: [graph]

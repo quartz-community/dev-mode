@@ -1,0 +1,11 @@
+extends: default
+configuration:
+  pageTitle: "Repro: leaflet-map-render-spa"
+  baseUrl: localhost
+# d3 / PixiJS come from jsDelivr, which the spec answers with empty scripts
+disable: [graph]
+plugins:
+  obsidian-plugin-leaflet:
+    # not a Quartz dependency: load the workspace clone as a local plugin
+    source: "../../../repos/obsidian-plugin-leaflet"
+    enabled: true
