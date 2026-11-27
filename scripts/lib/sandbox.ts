@@ -34,7 +34,10 @@ import { logWarn } from "./log.js";
 
 export const WORKSPACE_ROOT = resolve(import.meta.dirname, "../..");
 export const REPOS_DIR = join(WORKSPACE_ROOT, "repos");
-export const QUARTZ_DIR = join(REPOS_DIR, "quartz");
+/** The Quartz checkout sandboxes are built from; `DEV_MODE_QUARTZ_DIR` points at another (a worktree of a core branch). */
+export const QUARTZ_DIR = process.env.DEV_MODE_QUARTZ_DIR
+  ? resolve(process.env.DEV_MODE_QUARTZ_DIR)
+  : join(REPOS_DIR, "quartz");
 export const DEV_DIR = join(WORKSPACE_ROOT, ".dev");
 export const SANDBOX_ROOT = join(DEV_DIR, "sandboxes");
 export const SITES_ROOT = join(DEV_DIR, "sites");

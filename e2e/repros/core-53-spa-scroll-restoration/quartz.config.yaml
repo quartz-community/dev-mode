@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-53-spa-scroll-restoration"
+  baseUrl: localhost

@@ -1,0 +1,4 @@
+extends: default
+configuration:
+  pageTitle: "Repro: core-53-broken-link-marking"
+  baseUrl: localhost
