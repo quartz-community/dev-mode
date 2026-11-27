@@ -1,0 +1,5 @@
+extends: default
+configuration:
+  pageTitle: "Repro: search-excerpt-last-word"
+  baseUrl: localhost
+disable: [graph]
