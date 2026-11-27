@@ -2,7 +2,7 @@
 title: "Search: Escape in the #tag dropdown closes the whole search"
 issue: null
 plugins: [search]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # quartz-community/search#22 merged 2026-11-27 (search 1.1.5)
 ---
 
 # Search: Escape in the #tag dropdown closes the whole search

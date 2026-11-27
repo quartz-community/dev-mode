@@ -2,7 +2,7 @@
 title: "Graph: the local graph is drawn twice on a direct page load"
 issue: null
 plugins: [graph]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # quartz-community/graph#39 merged 2026-11-27 (graph 1.0.10)
 ---
 
 # Graph: the local graph is drawn twice on a direct page load

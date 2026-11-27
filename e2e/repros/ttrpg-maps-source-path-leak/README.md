@@ -2,7 +2,7 @@
 title: "TTRPG Tools: Maps: published HTML contains the builder's absolute file paths"
 issue: null
 plugins: [obsidian-plugin-ttrpg-tools-maps]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # quartz-community/obsidian-plugin-ttrpg-tools-maps#8 merged 2026-11-27 (1.0.3)
 ---
 
 # TTRPG Tools: Maps: the builder's file paths end up in the published HTML

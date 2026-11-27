@@ -2,7 +2,7 @@
 title: "Leaflet: ```leaflet blocks are not rendered (the plugin is still the template)"
 issue: null
 plugins: [obsidian-plugin-leaflet]
-status: reproduced # open | reproduced | fixed | wontfix
+status: fixed # quartz-community/obsidian-plugin-leaflet#5 merged 2026-11-27 (obsidian-plugin-leaflet 1.1.0)
 ---
 
 # Leaflet: ```leaflet blocks are not rendered
