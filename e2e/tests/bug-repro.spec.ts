@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { graphLabelFills, installGraphProbe } from "../helpers/graph-probe";
 
 const BASE = "/bug-repro";
 const ORIGIN = `http://localhost:4175`;
@@ -117,37 +118,47 @@ test.describe("Bug Reproductions", () => {
   });
 
   test.describe("#2372 — Graph text color doesn't change on theme toggle", () => {
+    // The graph is a PixiJS canvas: labels are PIXI.Text objects, read through the probe.
     test("graph text color updates after dark mode toggle", async ({
       page,
     }) => {
+      await installGraphProbe(page);
       await page.goto(`${BASE}/`);
-      await page.waitForTimeout(1000);
+      const canvas = page.locator(".graph-container canvas");
+      await expect(canvas).toBeVisible();
 
-      const getGraphTextColor = async () => {
-        return page.evaluate(() => {
-          const text = document.querySelector(
-            ".graph-outer text, #graph-container text",
-          );
-          if (!text) return null;
-          return (
-            window.getComputedStyle(text).fill ||
-            window.getComputedStyle(text).color
-          );
-        });
+      // Labels are created when zoomed in far enough (or for the hovered node).
+      const labelFills = async () => {
+        let fills: string[] = [];
+        await expect
+          .poll(async () => {
+            const box = await canvas.boundingBox();
+            if (!box) return 0;
+            await page.mouse.move(
+              box.x + box.width / 2,
+              box.y + box.height / 2,
+            );
+            await page.mouse.wheel(0, -400);
+            fills = await graphLabelFills(page);
+            return fills.length;
+          })
+          .toBeGreaterThan(0);
+        return new Set(fills);
       };
 
-      const lightColor = await getGraphTextColor();
+      const light = await labelFills();
+      expect(light.size).toBe(1);
 
-      const darkToggle = page.locator(".darkmode");
-      if ((await darkToggle.count()) > 0) {
-        await darkToggle.click();
-        await page.waitForTimeout(500);
-        const darkColor = await getGraphTextColor();
-
-        if (lightColor && darkColor) {
-          expect(darkColor).not.toBe(lightColor);
-        }
-      }
+      await page.locator(".darkmode").first().click();
+      await expect(page.locator(":root")).toHaveAttribute(
+        "saved-theme",
+        "dark",
+      );
+      // The theme change redraws the graph: a new canvas, no labels yet.
+      await expect.poll(() => graphLabelFills(page)).toEqual([]);
+      const dark = await labelFills();
+      expect(dark.size).toBe(1);
+      expect([...dark][0]).not.toBe([...light][0]);
     });
   });
 
