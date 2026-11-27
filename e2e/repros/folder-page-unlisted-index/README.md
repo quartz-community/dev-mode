@@ -1,5 +1,5 @@
 ---
-status: reproduced # quartz-community/folder-page#23 (unmerged); set to fixed once released and in Quartz
+status: fixed # quartz-community/folder-page#23 merged 2026-11-27 (folder-page 1.1.5)
 issue: "quartz-community/folder-page#23"
 plugin: folder-page
 ---

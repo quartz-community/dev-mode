@@ -1,5 +1,5 @@
 ---
-status: reproduced # quartz-community/utils#29 (unmerged); set to fixed once released and in Quartz
+status: fixed # quartz-community/utils#29 merged 2026-11-27 (utils 1.3.4, in Quartz via jackyzha0/quartz#2718)
 issue: "TalionOak/Carvalho (user report), quartz-community/utils#29"
 plugin: utils
 ---
